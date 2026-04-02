@@ -1,13 +1,16 @@
 import { Text, View, StyleSheet } from "react-native";
 import { DriverState } from "../model/types";
+import { tableColumns } from "../../../shared/config/tableConfig";
 
 type Props = {
   driver: DriverState;
 };
 
 export const PositionCell = ({ driver }: Props) => {
+  const width = tableColumns.find((col) => col.key === "position")?.width ?? 0;
+
   return (
-    <View style={styles.cell}>
+    <View style={[styles.cell, { width }]}>
       <Text style={styles.text}>{driver.position}</Text>
     </View>
   );
@@ -15,7 +18,6 @@ export const PositionCell = ({ driver }: Props) => {
 
 const styles = StyleSheet.create({
   cell: {
-    width: 40,
     alignItems: "center",
   },
   text: {

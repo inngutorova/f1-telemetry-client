@@ -21,8 +21,8 @@ export const DriverRow = ({ driver }: Props) => {
           case "position": return <PositionCell key={col.key} driver={driver} />;
           case "driver": return <DriverCell key={col.key} driver={driver} />;
           case "gap": return <GapCell key={col.key} driver={driver} />;
-          case "lastLap": return <LastLapCell key={col.key} lap={driver.timing.last_lap?.value}  />;
-          case "tyre": return <TyreCell key={col.key} tyre={driver.tyres.current_compound} laps={driver.tyres.tyre_age_laps}  />;
+          case "lastLap": return <LastLapCell key={col.key} driver={driver}  />;
+          case "tyre": return <TyreCell key={col.key} driver={driver}  />;
           default: return null;
         }
       })}

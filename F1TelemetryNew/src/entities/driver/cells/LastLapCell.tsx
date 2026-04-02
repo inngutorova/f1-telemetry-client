@@ -1,20 +1,23 @@
-import { View, Text, StyleSheet } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
+import { DriverState } from "../model/types";
+import { tableColumns } from "../../../shared/config/tableConfig";
 
 type Props = {
-  lap?: string | null;
+  driver: DriverState;
 };
 
-export const LastLapCell = ({ lap }: Props) => {
+export const LastLapCell = ({ driver }: Props) => {
+  const width = tableColumns.find((col) => col.key === "lastLap")?.width ?? 0;
+
   return (
-    <View style={styles.cell}>
-      <Text style={styles.text}>{lap ?? "-"}</Text>
+    <View style={[styles.cell, { width }]}>
+      <Text style={styles.text}>{driver.timing.last_lap?.value ?? "-"}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   cell: {
-    width: 80,
     alignItems: "flex-end",
     paddingRight: 10,
   },

@@ -1,7 +1,7 @@
 export const tableColumns = [
-  { key: "position", title: "#", visible: true },
-  { key: "driver", title: "Driver", visible: true },
-  { key: "gap", title: "Gap", visible: true },
-  { key: "lastLap", title: "Last Lap", visible: true },
-  { key: "tyre", title: "Tyre", visible: true },
+  { key: "position", title: "#", visible: true, width: 40 },
+  { key: "driver", title: "Driver", visible: true, width: 50 },
+  { key: "gap", title: "Gap", visible: true, width: 100 },
+  { key: "lastLap", title: "Last Lap", visible: true, width: 100 },
+  { key: "tyre", title: "Tyre", visible: true, width: 60 },
 ];
