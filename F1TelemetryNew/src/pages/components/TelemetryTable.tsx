@@ -8,6 +8,13 @@ type Props = {
 };
 
 export const TelemetryTable = ({ drivers }: Props) => {
+
+const sortedDrivers = [...drivers].sort((a, b) => {
+    const posA = a.position ?? 999; // на случай null
+    const posB = b.position ?? 999;
+    return posA - posB;
+  });
+
   return (
     <ScrollView horizontal={true}>
       <View>
@@ -24,7 +31,7 @@ export const TelemetryTable = ({ drivers }: Props) => {
 
       {/* Сами строки */}
       <FlatList
-        data={drivers}
+        data={sortedDrivers}
         keyExtractor={(item) => item.racing_number}
         renderItem={({ item }) => <DriverRow driver={item} />}
       />
