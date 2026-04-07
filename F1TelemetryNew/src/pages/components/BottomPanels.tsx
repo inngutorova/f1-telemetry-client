@@ -1,6 +1,9 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, FlatList, Pressable } from "react-native";
+import { View, Text, StyleSheet, FlatList, Pressable, Dimensions } from "react-native";
 import { RaceControlMessage, TeamRadioCapture } from "../../entities/session/model/types";
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const PANEL_MAX_HEIGHT = SCREEN_HEIGHT / 3;
 
 type Props = {
   raceControlMessages: RaceControlMessage[];
@@ -14,48 +17,60 @@ export const TelemetryBottomPanels = ({ raceControlMessages, teamRadio }: Props)
   return (
     <View style={styles.container}>
       {/* Race Control Messages */}
-      <Pressable
-        onPress={() => setRaceControlOpen(!isRaceControlOpen)}
-        style={styles.header}
-      >
-        <Text style={styles.headerText}>Race Control Messages</Text>
-        <Text style={styles.arrow}>{isRaceControlOpen ? "▲" : "▼"}</Text>
-      </Pressable>
-      {isRaceControlOpen && (
-        <FlatList
-          data={raceControlMessages}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text style={styles.itemText}>
-                [{item.category.toUpperCase()}] {item.message}
-              </Text>
-            </View>
-          )}
-        />
-      )}
+      <View style={styles.panelContainer}>
+        <Pressable
+          onPress={() => setRaceControlOpen(!isRaceControlOpen)}
+          style={styles.header}
+        >
+          <Text style={styles.headerText}>
+            Race Control Messages ({raceControlMessages.length})
+          </Text>
+          <Text style={styles.arrow}>{isRaceControlOpen ? "▲" : "▼"}</Text>
+        </Pressable>
+        
+        {isRaceControlOpen && (
+          <FlatList
+            data={raceControlMessages}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.item}>
+                <Text style={styles.itemText}>
+                  [{item.category.toUpperCase()}] {item.message}
+                </Text>
+              </View>
+            )}
+            style={styles.list}
+          />
+        )}
+      </View>
 
       {/* Team Radio */}
-      <Pressable
-        onPress={() => setTeamRadioOpen(!isTeamRadioOpen)}
-        style={styles.header}
-      >
-        <Text style={styles.headerText}>Team Radio</Text>
-        <Text style={styles.arrow}>{isTeamRadioOpen ? "▲" : "▼"}</Text>
-      </Pressable>
-      {isTeamRadioOpen && (
-        <FlatList
-          data={teamRadio}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.item}>
-              <Text style={styles.itemText}>
-                {item.racing_number}: {item.path}
-              </Text>
-            </View>
-          )}
-        />
-      )}
+      <View style={styles.panelContainer}>
+        <Pressable
+          onPress={() => setTeamRadioOpen(!isTeamRadioOpen)}
+          style={styles.header}
+        >
+          <Text style={styles.headerText}>
+            Team Radio ({teamRadio.length})
+          </Text>
+          <Text style={styles.arrow}>{isTeamRadioOpen ? "▲" : "▼"}</Text>
+        </Pressable>
+        
+        {isTeamRadioOpen && (
+          <FlatList
+            data={teamRadio}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.item}>
+                <Text style={styles.itemText}>
+                  {item.racing_number}: {item.path}
+                </Text>
+              </View>
+            )}
+            style={styles.list}
+          />
+        )}
+      </View>
     </View>
   );
 };
@@ -63,6 +78,9 @@ export const TelemetryBottomPanels = ({ raceControlMessages, teamRadio }: Props)
 const styles = StyleSheet.create({
   container: {
     backgroundColor: "#1F2A3A",
+  },
+  panelContainer: {
+    maxHeight: PANEL_MAX_HEIGHT,
   },
   header: {
     flexDirection: "row",
@@ -79,6 +97,9 @@ const styles = StyleSheet.create({
   arrow: {
     color: "white",
     fontWeight: "700",
+  },
+  list: {
+    maxHeight: PANEL_MAX_HEIGHT - 50, // Вычитаем высоту заголовка
   },
   item: {
     paddingVertical: 6,

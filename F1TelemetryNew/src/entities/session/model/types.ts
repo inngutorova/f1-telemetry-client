@@ -59,6 +59,7 @@ export type RaceControlMessage = {
 
     safety_car_mode?: "sc" | "vsc" | null;
     safety_car_status?: "deployed" | "ending" | "in_this_lap" | null;
+    mode?: "green" | "yellow" | "red" | "vsc" | "sc" | null; 
 };
 
 export type TeamRadioCapture = {

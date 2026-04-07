@@ -2,12 +2,16 @@ import {ScrollView, FlatList, View, Text, StyleSheet } from "react-native";
 import { DriverRow } from "../../entities/driver/DriverRow";
 import { DriverState } from '../../entities/driver/model/types'; 
 import { tableColumns } from "../../shared/config/tableConfig";
+import { useSettingsStore } from "../../features/settings/model/settingsStore";
+
 
 type Props = {
   drivers: DriverState[];
 };
 
 export const TelemetryTable = ({ drivers }: Props) => {
+  const { userSettings } = useSettingsStore();
+
 
 const sortedDrivers = [...drivers].sort((a, b) => {
     const posA = a.position ?? 999; // на случай null
@@ -15,18 +19,21 @@ const sortedDrivers = [...drivers].sort((a, b) => {
     return posA - posB;
   });
 
+  const visibleColumns = tableColumns.filter(col => 
+    userSettings.columnsVisible[col.key] ?? col.visible
+  );
+
+
+
   return (
     <ScrollView horizontal={true}>
       <View>
       <View style={styles.headerRow}>
-        {tableColumns.map(
-          (col) =>
-            col.visible && (
-              <View key={col.key} style={[styles.headerCell, { width: col.width }]}>
-                <Text style={styles.headerText}>{col.title}</Text>
-              </View>
-            )
-        )}
+        {visibleColumns.map((col) => (
+            <View key={col.key} style={[styles.headerCell, { width: col.width }]}>
+              <Text style={styles.headerText}>{col.title}</Text>
+            </View>
+          ))}
       </View>
 
       {/* Сами строки */}
