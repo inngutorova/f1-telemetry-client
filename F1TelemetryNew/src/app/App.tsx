@@ -2,6 +2,7 @@
 import React from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
 import TelemetryScreen from "../pages/TelemetryScreen";
+import { HomeScreen } from "../pages/HomeScreen";
 
 export default function App() {
   return (

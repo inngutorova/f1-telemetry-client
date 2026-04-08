@@ -77,7 +77,7 @@ export const TelemetryBottomPanels = ({ raceControlMessages, teamRadio }: Props)
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#1F2A3A",
+    backgroundColor: "#101921",
   },
   panelContainer: {
     maxHeight: PANEL_MAX_HEIGHT,
@@ -86,9 +86,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 12,
-    backgroundColor: "#2A3B4C",
+    backgroundColor: "#101921",
     borderBottomWidth: 1,
-    borderBottomColor: "#3B4C5D",
+    borderBottomColor: "#1F2A3A",
   },
   headerText: {
     color: "white",
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#3B4C5D",
+    borderBottomColor: "#1F2A3A",
   },
   itemText: {
     color: "#AAB4C3",

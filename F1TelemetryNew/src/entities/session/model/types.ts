@@ -68,3 +68,78 @@ export type TeamRadioCapture = {
     racing_number: string;
     path: string;                        // относительный путь / ссылка на mp3
 };
+
+export interface UISession {
+  id: string;
+  meta: SessionMeta;
+  state?: RaceState;
+  weather?: WeatherData;
+  isLive: boolean;
+  hasReplay: boolean;
+  startTime?: string;
+  endTime?: string;
+}
+
+// Функция для преобразования SessionMeta в UISession
+export const createUISession = (
+  meta: SessionMeta, 
+  isLive: boolean = false, 
+  hasReplay: boolean = true
+): UISession => {
+  return {
+    id: meta.session_key?.toString() || `${meta.grand_prix_name}_${meta.session_type}_${Date.now()}`,
+    meta,
+    isLive,
+    hasReplay,
+    startTime: meta.start_time,
+    endTime: meta.end_time,
+  };
+};
+
+// Данные трассы Сузука
+const SUZUKA_CIRCUIT = {
+  lengthKm: 5.807,
+  laps: 53,
+  turns: 18,
+};
+
+// Моковые данные - Гран При Японии 2026
+export const MOCK_UI_SESSIONS: UISession[] = [
+  {
+    id: 'japan_race_2026',
+    meta: {
+      meeting_key: 1,
+      session_key: 1,
+      grand_prix_name: 'Japanese Grand Prix',
+      official_name: 'FORMULA 1 ARAMCO JAPANESE GRAND PRIX 2026',
+      location: 'Suzuka',
+      country_code: 'JPN',
+      country_name: 'Japan',
+      circuit_short_name: 'Suzuka Circuit',
+      session_type: 'race',
+      session_name: 'Race',
+      session_number: 1,
+      qualifying_part: null,
+      session_part: null,
+      start_time: '2026-03-29T08:00:00Z', // 8:00 UTC / 17:00 JST
+      end_time: '2026-03-29T10:00:00Z',
+      gmt_offset: '+09:00',
+    },
+    isLive: true, // Сейчас активна
+    hasReplay: true,
+    startTime: '2026-03-29T08:00:00Z',
+    endTime: '2026-03-29T10:00:00Z',
+  },
+];
+
+// Дополнительные данные о трассе
+export const getCircuitInfo = (circuitShortName?: string) => {
+  const circuits: Record<string, { lengthKm: number; laps: number; turns: number }> = {
+    'Suzuka Circuit': SUZUKA_CIRCUIT,
+    'Marina Bay Street Circuit': { lengthKm: 4.927, laps: 62, turns: 19 },
+    'Melbourne': { lengthKm: 5.278, laps: 58, turns: 14 },
+    'Monaco': { lengthKm: 3.337, laps: 78, turns: 19 },
+  };
+  
+  return circuits[circuitShortName || ''] || { lengthKm: 0, laps: 0, turns: 0 };
+};

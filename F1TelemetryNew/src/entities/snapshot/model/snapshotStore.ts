@@ -1,5 +1,6 @@
-import {create} from "zustand";
-import { RaceSnapshot } from "./types"; // поправь путь под твою структуру
+// src/entities/snapshot/model/snapshotStore.ts
+import { create } from "zustand";
+import { RaceSnapshot } from "./types";
 
 interface SnapshotState {
   currentSnapshot: RaceSnapshot | null;
@@ -9,6 +10,8 @@ interface SnapshotState {
   setSnapshot: (snapshot: RaceSnapshot) => void;
   resetSnapshot: () => void;
   getSnapshotBySequence: (sequence: number) => RaceSnapshot | undefined;
+  getSnapshotByIndex: (index: number) => RaceSnapshot | undefined;
+  getSnapshotByDelay: (delayMs: number, intervalMs: number) => RaceSnapshot | undefined;
 }
 
 export const useSnapshotStore = create<SnapshotState>((set, get) => ({
@@ -18,7 +21,7 @@ export const useSnapshotStore = create<SnapshotState>((set, get) => ({
 
   setSnapshot: (snapshot: RaceSnapshot) => {
     set((state) => {
-      const newBuffer = [...state.buffer, snapshot].slice(-50); // храним последние 50 snapshot
+      const newBuffer = [...state.buffer, snapshot].slice(-100); // увеличил буфер до 100
       const initialSnapshot = state.initialSnapshot ?? snapshot;
       return {
         currentSnapshot: snapshot,
@@ -38,5 +41,16 @@ export const useSnapshotStore = create<SnapshotState>((set, get) => ({
 
   getSnapshotBySequence: (sequence: number) => {
     return get().buffer.find((s) => s.sequence === sequence);
+  },
+
+  getSnapshotByIndex: (index: number) => {
+    return get().buffer[index];
+  },
+
+  getSnapshotByDelay: (delayMs: number, intervalMs: number) => {
+    const { buffer } = get();
+    const snapshotsBehind = Math.floor(delayMs / intervalMs);
+    const targetIndex = buffer.length - 1 - snapshotsBehind;
+    return buffer[Math.max(0, targetIndex)];
   },
 }));

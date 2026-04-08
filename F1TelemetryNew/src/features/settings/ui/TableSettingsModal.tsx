@@ -122,12 +122,6 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
     const renderItem = ({ item, index }: { item: TableColumn; index: number }) => (
         <View style={styles.columnItem}>
             <View style={styles.columnInfo}>
-                <TouchableOpacity
-                    onPress={() => {}}
-                    style={styles.dragHandle}
-                >
-                    <Text style={styles.dragIcon}>⋮⋮</Text>
-                </TouchableOpacity>
                 <Text style={styles.columnTitle}>{item.title}</Text>
             </View>
             
@@ -151,7 +145,7 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
                 <Switch
                     value={item.visible}
                     onValueChange={() => toggleColumn(item.key)}
-                    trackColor={{ false: '#3B4C5D', true: '#4CAF50' }}
+                    trackColor={{ false: '#3B4C5D', true: '#0b2d71' }}
                     thumbColor={item.visible ? '#FFFFFF' : '#AAB4C3'}
                 />
             </View>
@@ -249,15 +243,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
     },
-    dragHandle: {
-        padding: 4,
-        marginRight: 8,
-    },
-    dragIcon: {
-        color: '#AAB4C3',
-        fontSize: 20,
-        fontWeight: '600',
-    },
     columnTitle: {
         color: 'white',
         fontSize: 16,
@@ -307,7 +292,7 @@ const styles = StyleSheet.create({
         borderColor: '#3B4C5D',
     },
     saveButton: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: '#0b2d71', // Синий цвет вместо зеленого
     },
     cancelButtonText: {
         color: '#AAB4C3',

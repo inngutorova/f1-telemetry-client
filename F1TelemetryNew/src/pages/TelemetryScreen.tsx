@@ -26,6 +26,7 @@ export default function TelemetryScreen() {
 
     // Текущий круг - количество кругов лидера с проверкой на null/undefined
     const currentLap = leader?.timing.number_of_laps ?? 0;
+    
 
     const delay = 0;
 
@@ -45,8 +46,6 @@ export default function TelemetryScreen() {
             <TelemetryHeader
                 currentLap={currentLap}
                 totalLaps={53}
-                delay={delay}
-                onPressDelay={handleDelayPress}
                 onPressSettings={handleSettingsPress}
             />
             <TelemetryTable drivers={snapshot.drivers} />

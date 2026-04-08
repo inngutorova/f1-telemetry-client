@@ -1,35 +1,33 @@
+// src/pages/components/TelemetryHeader.tsx
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { DelayControl } from "../../features/settings/ui/DelayControl";
+import { Icon } from '../../shared/ui/Icon';
+import { icons } from '../../shared/ui/icons';
 
 type Props = {
   currentLap: number;
   totalLaps: number;
-  delay: number; // секунды
-  onPressDelay: () => void;
   onPressSettings: () => void;
 };
 
 export const TelemetryHeader = ({
   currentLap,
   totalLaps,
-  delay,
-  onPressDelay,
   onPressSettings,
 }: Props) => {
   return (
     <View style={styles.container}>
-      {/* LEFT */}
-      <TouchableOpacity onPress={onPressDelay}>
-        <Text style={styles.sideText}>+{delay}s</Text>
-      </TouchableOpacity>
+      {/* LEFT - Delay Control */}
+      <DelayControl totalLaps={totalLaps} />
 
       {/* CENTER */}
       <Text style={styles.centerText}>
         Lap {currentLap} / {totalLaps}
       </Text>
 
-      {/* RIGHT */}
+      {/* RIGHT - Settings */}
       <TouchableOpacity onPress={onPressSettings}>
-        <Text style={styles.sideText}>#</Text>
+              <Icon source={icons.settings} size={27} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
@@ -43,6 +41,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     backgroundColor: "#0B0F1A",
+    zIndex: 100, // Чтобы выпадашка была поверх
   },
   centerText: {
     color: "white",
@@ -51,6 +50,6 @@ const styles = StyleSheet.create({
   },
   sideText: {
     color: "#AAB4C3",
-    fontSize: 14,
+    fontSize: 18,
   },
 });
