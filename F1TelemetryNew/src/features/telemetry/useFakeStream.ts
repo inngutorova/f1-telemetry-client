@@ -38,9 +38,8 @@ export const useFakeStream = (options: UseFakeStreamOptions = {}) => {
   useEffect(() => {
     delayMsRef.current = delayMs;
     console.log("delayMs changed to:", delayMs);
-    // При изменении delay принудительно обновляем отображение
     if (intervalRef.current) {
-      displayCurrentSnapshot();
+      //displayCurrentSnapshot();
     }
   }, [delayMs]);
 
@@ -66,6 +65,7 @@ export const useFakeStream = (options: UseFakeStreamOptions = {}) => {
     if (snapshot) {
       console.log(`Displaying snapshot at index ${displayIndex} (live index: ${indexRef.current - 1}, delay: ${delayMsRef.current}ms)`);
       
+      // ТОЛЬКО ЗДЕСЬ обновляем UI - с учетом delay
       setSnapshot(snapshot);
       lastDisplayedIndexRef.current = displayIndex;
       
@@ -105,7 +105,8 @@ export const useFakeStream = (options: UseFakeStreamOptions = {}) => {
       console.log(`Live snapshot ${indexRef.current + 1}/${snapshotsRef.current.length}`);
       indexRef.current++;
       
-      // Отображаем с учетом текущего delay
+      // НЕ вызываем setSnapshot здесь!
+      // Только показываем с учетом delay
       displayCurrentSnapshot();
       
     }, intervalMs);
