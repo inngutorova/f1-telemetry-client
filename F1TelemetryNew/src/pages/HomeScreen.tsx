@@ -1,4 +1,4 @@
-// src/pages/HomeScreen/HomeScreen.tsx
+// src/pages/HomeScreen.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,12 +8,15 @@ import {
   StatusBar,
   SafeAreaView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
-import { SessionCard } from './components/SessionCard'; // Исправлен путь
-import { UISession, MOCK_UI_SESSIONS } from '../entities/session/model/types'; // Исправлен путь
+import { SessionCard } from './components/SessionCard';
+import { UISession, MOCK_UI_SESSIONS } from '../entities/session/model/types';
 
-export const HomeScreen: React.FC = () => {
+interface HomeScreenProps {
+  navigation: any;
+}
+
+export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const [sessions, setSessions] = useState<UISession[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,11 +26,6 @@ export const HomeScreen: React.FC = () => {
 
   const loadSessions = async () => {
     try {
-      // TODO: Заменить на реальный API запрос
-      // const response = await api.getSessions();
-      // setSessions(response);
-      
-      // Используем моковые данные с Гран При Японии
       setTimeout(() => {
         setSessions(MOCK_UI_SESSIONS);
         setLoading(false);
@@ -39,24 +37,13 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleSessionPress = (session: UISession, watchFromStart: boolean) => {
-    // Временно показываем информацию о выбранной сессии
-    Alert.alert(
-      'Session Selected',
-      `Session: ${session.meta.grand_prix_name}\n` +
-      `Track: ${session.meta.circuit_short_name}\n` +
-      `Watch from start: ${watchFromStart ? 'Yes' : 'No'}\n` +
-      `Live: ${session.isLive ? 'Yes' : 'No'}\n` +
-      `Has replay: ${session.hasReplay ? 'Yes' : 'No'}`,
-      [{ text: 'OK' }]
-    );
-    
-    // TODO: Позже добавить навигацию
-    // navigation.navigate('Telemetry', {
-    //   sessionId: session.id,
-    //   sessionMeta: session.meta,
-    //   watchFromStart,
-    //   isLive: session.isLive && !watchFromStart,
-    // });
+    // Навигация на экран телеметрии
+    navigation.navigate('Telemetry', {
+      sessionId: session.id,
+      sessionMeta: session.meta,
+      watchFromStart,
+      isLive: session.isLive && !watchFromStart,
+    });
   };
 
   const activeSessions = sessions.filter(s => s.isLive);

@@ -1,6 +1,7 @@
 // src/navigation/AppNavigator.tsx
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { HomeScreen } from '../pages/HomeScreen';
 import TelemetryScreen from '../pages/TelemetryScreen';
 
 const Stack = createStackNavigator();
@@ -8,13 +9,27 @@ const Stack = createStackNavigator();
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Stack.Navigator 
-        screenOptions={{ 
-          headerShown: false,
-          cardStyle: { backgroundColor: '#0B1422' }
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#0B0F1A',
+          },
+          headerTintColor: '#ffffff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
         }}
       >
-        <Stack.Screen name="Telemetry" component={TelemetryScreen} />
+        <Stack.Screen 
+          name="Home" 
+          component={HomeScreen} 
+          options={{ title: 'F1 Telemetry', headerShown: false }}
+        />
+        <Stack.Screen 
+          name="Telemetry" 
+          component={TelemetryScreen} 
+          options={{ title: 'Telemetry', headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

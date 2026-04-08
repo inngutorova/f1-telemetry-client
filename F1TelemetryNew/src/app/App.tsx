@@ -1,13 +1,12 @@
 // App.tsx
 import React from "react";
 import { SafeAreaView, StyleSheet } from "react-native";
-import TelemetryScreen from "../pages/TelemetryScreen";
-import { HomeScreen } from "../pages/HomeScreen";
+import AppNavigator from "./AppNavigator";
 
 export default function App() {
   return (
     <SafeAreaView style={styles.container}>
-      <TelemetryScreen />
+      <AppNavigator />
     </SafeAreaView>
   );
 }
@@ -15,6 +14,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B1422", // под цвет твоего дизайна
+    backgroundColor: "#0B1422",
   },
 });

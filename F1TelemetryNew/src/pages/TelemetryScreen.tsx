@@ -1,4 +1,4 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import { useState } from "react";
 import { TelemetryTable } from "./components/TelemetryTable";
 import { TelemetryHeader } from "./components/TelemetryHeader";
@@ -10,13 +10,15 @@ import { useSnapshotStore } from "../entities/snapshot/model/snapshotStore";
 import { useMessagesStore } from "../entities/messages/model/messagesStore";
 import { TableSettingsModal } from "../features/settings/ui/TableSettingsModal";
 
+interface TelemetryScreenProps {
+  navigation?: any;
+  route?: any;
+}
 
-
-export default function TelemetryScreen() {
+export default function TelemetryScreen({ navigation, route }: TelemetryScreenProps) {
     useFakeStream();
 
     const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
-
 
     const raceControlMessages = useMessagesStore((s) => s.raceControlMessages);
     const teamRadioMessages = useMessagesStore((s) => s.teamRadioMessages);
@@ -37,12 +39,20 @@ export default function TelemetryScreen() {
     const handleSettingsPress = () => {
         console.log("open columns settings");
         setSettingsModalVisible(true);
-
     };
-
 
     return (
         <View style={{ flex: 1, backgroundColor: "#0B0F1A" }}>
+            {/* Кнопка назад */}
+            {navigation && (
+                <TouchableOpacity 
+                    onPress={() => navigation.goBack()}
+                    style={styles.backButton}
+                >
+                    <Text style={styles.backText}>←</Text>
+                </TouchableOpacity>
+            )}
+            
             <TelemetryHeader
                 currentLap={currentLap}
                 totalLaps={53}
@@ -65,5 +75,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#0B1420",
+    },
+    backButton: {
+        position: 'absolute',
+        top: 12,
+        left: 16,
+        zIndex: 100,
+        padding: 8,
+    },
+    backText: {
+        color: '#ffffff',
+        fontSize: 24,
     },
 });
