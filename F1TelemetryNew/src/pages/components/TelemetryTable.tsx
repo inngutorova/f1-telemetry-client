@@ -1,9 +1,8 @@
-import {ScrollView, FlatList, View, Text, StyleSheet } from "react-native";
+import { ScrollView, FlatList, View, Text, StyleSheet } from "react-native";
 import { DriverRow } from "../../entities/driver/DriverRow";
 import { DriverState } from '../../entities/driver/model/types'; 
 import { tableColumns } from "../../shared/config/tableConfig";
 import { useSettingsStore } from "../../features/settings/model/settingsStore";
-
 
 type Props = {
   drivers: DriverState[];
@@ -12,37 +11,52 @@ type Props = {
 export const TelemetryTable = ({ drivers }: Props) => {
   const { userSettings } = useSettingsStore();
 
-
-const sortedDrivers = [...drivers].sort((a, b) => {
-    const posA = a.position ?? 999; // на случай null
+  const sortedDrivers = [...drivers].sort((a, b) => {
+    const posA = a.position ?? 999;
     const posB = b.position ?? 999;
     return posA - posB;
   });
 
-  const visibleColumns = tableColumns.filter(col => 
-    userSettings.columnsVisible[col.key] ?? col.visible
-  );
+  // Получаем колонки в правильном порядке из настроек
+  const getOrderedColumns = () => {
+    // Если есть сохраненный порядок, используем его
+    if (userSettings.columnsOrder && userSettings.columnsOrder.length > 0) {
+      return userSettings.columnsOrder
+        .map(key => {
+          const col = tableColumns.find(c => c.key === key);
+          if (col && (userSettings.columnsVisible[col.key] ?? col.visible)) {
+            return col;
+          }
+          return null;
+        })
+        .filter((col): col is typeof tableColumns[0] => col !== null);
+    }
+    
+    // Иначе используем стандартный порядок с фильтрацией по видимости
+    return tableColumns.filter(col => 
+      userSettings.columnsVisible[col.key] ?? col.visible
+    );
+  };
 
-
+  const visibleColumns = getOrderedColumns();
 
   return (
     <ScrollView horizontal={true}>
       <View>
-      <View style={styles.headerRow}>
-        {visibleColumns.map((col) => (
+        <View style={styles.headerRow}>
+          {visibleColumns.map((col) => (
             <View key={col.key} style={[styles.headerCell, { width: col.width }]}>
               <Text style={styles.headerText}>{col.title}</Text>
             </View>
           ))}
-      </View>
+        </View>
 
-      {/* Сами строки */}
-      <FlatList
-        data={sortedDrivers}
-        keyExtractor={(item) => item.racing_number}
-        renderItem={({ item }) => <DriverRow driver={item} />}
-      />
-    </View>
+        <FlatList
+          data={sortedDrivers}
+          keyExtractor={(item) => item.racing_number}
+          renderItem={({ item }) => <DriverRow driver={item} />}
+        />
+      </View>
     </ScrollView>
   );
 };

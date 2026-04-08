@@ -7,7 +7,7 @@ const STORAGE_KEY = "@user_settings";
 export type UserSettings = {
   delayMs: number;
   columnsVisible: Record<string, boolean>;
-  columnsOrder?: string[]; // Добавим порядок колонок
+  columnsOrder: string[]; // Добавим порядок колонок
 };
 
 interface SettingsState {
@@ -32,6 +32,8 @@ const DEFAULT_SETTINGS: UserSettings = {
     positionChange: true,
     sectors: true,
   },
+  columnsOrder: ["position", "driver", "gap", "interval", "lastLap", "bestLap", "tyre", "positionChange", "sectors"],
+
 };
 
 // Проверяем, доступен ли AsyncStorage

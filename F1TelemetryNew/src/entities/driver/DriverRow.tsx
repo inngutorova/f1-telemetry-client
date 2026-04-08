@@ -22,10 +22,28 @@ export const DriverRow = ({ driver }: Props) => {
 
     const { userSettings } = useSettingsStore();
 
-    // Получаем видимые колонки с учетом настроек пользователя
-    const visibleColumns = tableColumns.filter(col =>
-        userSettings.columnsVisible[col.key] ?? col.visible
-    );
+    // Получаем колонки в правильном порядке из настроек
+    const getOrderedColumns = () => {
+        // Если есть сохраненный порядок, используем его
+        if (userSettings.columnsOrder && userSettings.columnsOrder.length > 0) {
+            return userSettings.columnsOrder
+                .map(key => {
+                    const col = tableColumns.find(c => c.key === key);
+                    if (col && (userSettings.columnsVisible[col.key] ?? col.visible)) {
+                        return col;
+                    }
+                    return null;
+                })
+                .filter((col): col is typeof tableColumns[0] => col !== null);
+        }
+        
+        // Иначе используем стандартный порядок с фильтрацией по видимости
+        return tableColumns.filter(col => 
+            userSettings.columnsVisible[col.key] ?? col.visible
+        );
+    };
+
+    const visibleColumns = getOrderedColumns();
     const renderCell = (col: typeof tableColumns[0]) => {
         switch (col.key) {
             case "position":

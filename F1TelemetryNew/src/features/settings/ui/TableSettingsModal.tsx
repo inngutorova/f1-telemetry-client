@@ -25,15 +25,42 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
 
     useEffect(() => {
         if (visible) {
-            // Загружаем текущую конфигурацию колонок
-            const currentColumns = tableColumns.map(col => ({
-                ...col,
-                visible: userSettings.columnsVisible[col.key] ?? col.visible,
-            }));
-            setColumns(currentColumns);
+            // Загружаем колонки в сохраненном порядке
+            let orderedColumns: TableColumn[];
+            
+            if (userSettings.columnsOrder && userSettings.columnsOrder.length > 0) {
+                // Сортируем колонки согласно сохраненному порядку
+                orderedColumns = userSettings.columnsOrder
+                    .map(key => {
+                        const originalCol = tableColumns.find(col => col.key === key);
+                        if (originalCol) {
+                            return {
+                                ...originalCol,
+                                visible: userSettings.columnsVisible[key] ?? originalCol.visible,
+                            };
+                        }
+                        return null;
+                    })
+                    .filter((col): col is TableColumn => col !== null);
+                
+                // Добавляем новые колонки, которых нет в сохраненном порядке
+                const existingKeys = new Set(userSettings.columnsOrder);
+                const newColumns = tableColumns.filter(col => !existingKeys.has(col.key));
+                if (newColumns.length > 0) {
+                    orderedColumns = [...orderedColumns, ...newColumns];
+                }
+            } else {
+                // Если нет сохраненного порядка, используем стандартный порядок
+                orderedColumns = tableColumns.map(col => ({
+                    ...col,
+                    visible: userSettings.columnsVisible[col.key] ?? col.visible,
+                }));
+            }
+            
+            setColumns(orderedColumns);
             setHasChanges(false);
         }
-    }, [visible, userSettings.columnsVisible]);
+    }, [visible, userSettings.columnsVisible, userSettings.columnsOrder]);
 
     const toggleColumn = (key: ColumnKey) => {
         setColumns(prev =>
@@ -56,11 +83,13 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
     const handleSave = () => {
         // Сохраняем порядок и видимость колонок
         const columnsVisible: Record<string, boolean> = {};
+        const columnsOrder = columns.map(col => col.key);
+        
         columns.forEach(col => {
             columnsVisible[col.key] = col.visible;
         });
         
-        setUserSettings({ columnsVisible });
+        setUserSettings({ columnsVisible, columnsOrder });
         saveSettings();
         setHasChanges(false);
         onClose();
