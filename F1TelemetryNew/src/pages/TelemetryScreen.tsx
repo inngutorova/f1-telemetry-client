@@ -62,6 +62,7 @@ export default function TelemetryScreen({ navigation, route }: TelemetryScreenPr
             <TelemetryBottomPanels
                 raceControlMessages={raceControlMessages}
                 teamRadio={teamRadioMessages}
+                snapshot={snapshot}
             />
             <TableSettingsModal
                 visible={isSettingsModalVisible}

@@ -18,17 +18,27 @@ export default function AppNavigator() {
           headerTitleStyle: {
             fontWeight: 'bold',
           },
+          cardStyle: { backgroundColor: '#0B0F1A' }, // Добавляем фон для карточек
+          animationEnabled: false, // Отключаем анимацию (опционально)
         }}
       >
         <Stack.Screen 
           name="Home" 
           component={HomeScreen} 
-          options={{ title: 'F1 Telemetry', headerShown: false }}
+          options={{ 
+            title: 'F1 Telemetry', 
+            headerShown: false,
+            cardStyle: { backgroundColor: '#0B0F1A' }
+          }}
         />
         <Stack.Screen 
           name="Telemetry" 
           component={TelemetryScreen} 
-          options={{ title: 'Telemetry', headerShown: false }}
+          options={{ 
+            title: 'Telemetry', 
+            headerShown: false,
+            cardStyle: { backgroundColor: '#0B0F1A' }
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -309,10 +309,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF3B30',
   },
   watchButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0b2d71',
   },
   primaryButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: '#0b2d71',
   },
   secondaryButton: {
     backgroundColor: '#333333',
