@@ -15,7 +15,7 @@ export const tableColumns: TableColumn[] = [
     { key: "bestLap", title: "Best Lap", visible: true, width: 90 },
     { key: "tyre", title: "Tyre", visible: true, width: 70 },
     { key: "positionChange", title: "+/-", visible: true, width: 50 },
-    { key: "sectors", title: "Sectors", visible: true, width: 120 },
+    { key: "sectors", title: "Sectors", visible: true, width: 140 },
 ];
 
 export type ColumnKey = typeof tableColumns[number]["key"];

@@ -125,7 +125,7 @@ export const MOCK_UI_SESSIONS: UISession[] = [
       end_time: '2026-03-29T10:00:00Z',
       gmt_offset: '+09:00',
     },
-    isLive: true, // Сейчас активна
+    isLive: false, // Сейчас активна
     hasReplay: true,
     startTime: '2026-03-29T08:00:00Z',
     endTime: '2026-03-29T10:00:00Z',
