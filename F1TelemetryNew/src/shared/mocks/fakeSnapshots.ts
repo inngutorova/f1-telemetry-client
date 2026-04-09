@@ -30,6 +30,111 @@ const REAL_DRIVERS: Omit<DriverState, 'timing' | 'tyres' | 'track' | 'position' 
     { racing_number: "10", identity: { tla: "GAS", full_name: "Pierre GASLY", first_name: "Pierre", last_name: "Gasly", team_name: "Alpine", team_color: "00A1E8", broadcast_name: "P GASLY" } },
 ];
 
+// Реальные team radio записи
+const TEAM_RADIO_LIST = [
+    {
+        Utc: "2025-10-05T11:13:12.611Z",
+        RacingNumber: "63",
+        Path: "Target lap times low 1:29.",
+        driver: "Russell",
+        message: "Target lap times low 1:29."
+    },
+    {
+        Utc: "2025-10-05T11:23:26.175Z",
+        RacingNumber: "44",
+        Path: "Battery 70%. Deploy in DRS zones only. Save for later.",
+        driver: "Hamilton",
+        message: "Battery 70%. Deploy in DRS zones only. Save for later."
+    },
+    {
+        Utc: "2025-10-05T11:26:30.583Z",
+        RacingNumber: "16",
+        Path: "Harvesting mode disabled. Overtake button available.",
+        driver: "Leclerc",
+        message: "Harvesting mode disabled. Overtake button available."
+    },
+    {
+        Utc: "2025-10-05T11:35:22.123Z",
+        RacingNumber: "3",
+        Path: "You have 3 laps to catch Norris. Keep the pressure.",
+        driver: "Verstappen",
+        message: "You have 3 laps to catch Norris. Keep the pressure."
+    },
+    {
+        Utc: "2025-10-05T11:42:15.456Z",
+        RacingNumber: "81",
+        Path: "Good pace Oscar. You're catching the pack. Stay patient.",
+        driver: "Piastri",
+        message: "Good pace Oscar. You're catching the pack. Stay patient."
+    },
+    {
+        Utc: "2025-10-05T11:48:33.789Z",
+        RacingNumber: "55",
+        Path: "Carlos, target lap 1:33.9. You're 2 tenths up.",
+        driver: "Sainz",
+        message: "Carlos, target lap 1:33.9. You're 2 tenths up."
+    }
+];
+
+
+const RACE_CONTROL_MESSAGES = [
+    {
+        category: "other" as const,
+        messageTemplate: "CAR {car} ({tla}) TIME {time} DELETED - TRACK LIMITS AT TURN {turn} LAP {lap}",
+        types: ["track_limits"]
+    },
+    {
+        category: "incident" as const,
+        messageTemplate: "TURN {turn} INCIDENT INVOLVING CARS {car1} ({tla1}) AND {car2} ({tla2}) NOTED",
+        types: ["incident"]
+    },
+    {
+        category: "incident" as const,
+        messageTemplate: "FIA STEWARDS: TURN {turn} INCIDENT INVOLVING CARS {car1} ({tla1}) AND {car2} ({tla2}) REVIEWED NO FURTHER INVESTIGATION",
+        types: ["incident_resolved"]
+    },
+    {
+        category: "flag" as const,
+        messageTemplate: "YELLOW FLAG IN SECTOR {sector}",
+        types: ["yellow_flag"],
+        flag: "yellow" as const
+    },
+    {
+        category: "flag" as const,
+        messageTemplate: "GREEN FLAG - RACING RESUMES",
+        types: ["green_flag"],
+        flag: "green" as const
+    },
+    {
+        category: "flag" as const,
+        messageTemplate: "DOUBLE YELLOW IN SECTOR {sector}",
+        types: ["double_yellow"],
+        flag: "double_yellow" as const
+    },
+    {
+        category: "safety_car" as const,
+        messageTemplate: "VIRTUAL SAFETY CAR DEPLOYED",
+        types: ["vsc"],
+        flag: "yellow" as const
+    },
+    {
+        category: "drs" as const,
+        messageTemplate: "DRS ENABLED",
+        types: ["drs_enabled"],
+        flag: "clear" as const
+    },
+    {
+        category: "penalty" as const,
+        messageTemplate: "CAR {car} ({tla}) INVESTIGATED FOR EXCESSIVE TRACK LIMITS",
+        types: ["investigation"]
+    },
+    {
+        category: "penalty" as const,
+        messageTemplate: "CAR {car} ({tla}) RECEIVED 5 SECOND TIME PENALTY",
+        types: ["penalty"]
+    }
+];
+
 // Конфигурация сессии
 interface SessionConfig {
     type: "practice" | "qualifying" | "race";
@@ -68,6 +173,7 @@ class MockTelemetryGenerator {
     private readonly LAP_DURATION_SEC = 90;
     private readonly SNAPSHOTS_PER_LAP = Math.floor((this.LAP_DURATION_SEC * 1000) / 2000);
     private readonly PIT_LOSS_SEC = 22;
+    private teamRadioIndex: number = 0;
 
     constructor(config: SessionConfig) {
         this.sessionConfig = config;
@@ -76,6 +182,7 @@ class MockTelemetryGenerator {
             currentLap: 0,
             drivers: new Map(),
         };
+        this.teamRadioIndex = 0;
 
         const initialPositions = [16, 81, 44, 1, 31, 41, 30, 5, 55, 87, 27, 23, 11, 63, 3, 14, 18, 77, 43, 12, 6, 10];
 
@@ -152,10 +259,8 @@ class MockTelemetryGenerator {
 
         if (drivers.length === 0) return;
 
-        // Сортируем по позиции (а не по gap!)
         drivers.sort((a, b) => a[1].position - b[1].position);
 
-        // Лидер - первый в сортировке по позиции
         const leaderNum = drivers[0][0];
 
         for (let i = 0; i < drivers.length; i++) {
@@ -168,88 +273,72 @@ class MockTelemetryGenerator {
             const isInPit = data.inPit;
             const tyreAge = data.tyreAge;
             const compound = data.compound;
-            // Пилот впереди - это предыдущий в массиве (с позицией на 1 меньше)
             const driverAhead = drivers[i - 1];
             if (!driverAhead) continue;
 
             const intervalToAhead = data.gap - driverAhead[1].gap;
 
-            // Базовое изменение gap (может быть как положительным, так и отрицательным)
-            let gapChange = (Math.random() - 0.5) * 0.25; // -0.125 до +0.125 за снапшот
+            let gapChange = (Math.random() - 0.5) * 0.25;
 
-            // 1. Влияние интервала до впереди идущего
             if (intervalToAhead < 0.5) {
-                // Очень близко - высокая вероятность как догнать, так и отстать
                 gapChange += (Math.random() - 0.5) * 0.4;
             } else if (intervalToAhead < 1.5) {
-                // Близко - умеренные изменения
                 gapChange += (Math.random() - 0.5) * 0.25;
             } else {
-                // Далеко - небольшие случайные изменения
                 gapChange += (Math.random() - 0.5) * 0.15;
             }
 
-            // 2. Влияние износа шин (старые шины = отставание)
             if (tyreAge > 20) {
-                gapChange += 0.2; // Сильно отстает
+                gapChange += 0.2;
             } else if (tyreAge > 15) {
-                gapChange += 0.1; // Умеренно отстает
+                gapChange += 0.1;
             } else if (tyreAge < 5) {
-                gapChange -= 0.1; // Новые шины - немного быстрее
+                gapChange -= 0.1;
             }
 
-            // 3. Влияние состава шин
             if (compound === "soft") {
                 if (tyreAge < 5) {
-                    gapChange -= 0.12; // Soft в начале стинта - быстрее
+                    gapChange -= 0.12;
                 } else if (tyreAge > 15) {
-                    gapChange += 0.15; // Soft в конце - сильно теряет
+                    gapChange += 0.15;
                 }
             } else if (compound === "hard") {
                 if (tyreAge < 5) {
-                    gapChange += 0.05; // Hard новые - немного медленнее
+                    gapChange += 0.05;
                 } else if (tyreAge > 20) {
-                    gapChange -= 0.05; // Hard старые - держатся лучше
+                    gapChange -= 0.05;
                 }
             } else if (compound === "medium") {
-                // Medium - сбалансирован
                 if (tyreAge > 20) {
                     gapChange += 0.08;
                 }
             }
 
-            // 4. Штраф за пит-стоп
             if (isInPit) {
-                gapChange += 0.6; // Потеря времени в пит-лейн
+                gapChange += 0.6;
             }
 
-            // 5. Случайные события (трафик, ошибки)
             if (Math.random() < 0.02) {
-                gapChange += 0.3; // Ошибка или трафик
+                gapChange += 0.3;
                 console.log(`⚠️ ${this.getDriverTla(num)} lost time due to traffic/error`);
             }
             if (Math.random() < 0.01) {
-                gapChange -= 0.2; // Удачный момент
+                gapChange -= 0.2;
                 console.log(`✨ ${this.getDriverTla(num)} gained time!`);
             }
 
-            // Ограничиваем изменение за один снапшот (максимум 0.3 секунды)
             const maxChangePerSnapshot = 0.3 / this.SNAPSHOTS_PER_LAP;
             const clampedChange = Math.max(-maxChangePerSnapshot, Math.min(maxChangePerSnapshot, gapChange));
 
             let newGap = data.gap + clampedChange;
-
-            // Не может быть отрицательным
             newGap = Math.max(0.05, newGap);
 
-            // Если отставание стало слишком большим (больше круга + запас)
             if (newGap > this.LAP_DURATION_SEC + 15) {
                 newGap = this.LAP_DURATION_SEC + (Math.random() - 0.5) * 10;
             }
 
             data.gap = newGap;
 
-            // Логируем значительные изменения
             const gapDiff = newGap - data.gap;
             if (Math.abs(gapDiff) > 0.1) {
                 const driver = REAL_DRIVERS.find(d => d.racing_number === num);
@@ -258,34 +347,27 @@ class MockTelemetryGenerator {
         }
     }
 
-    // Обновление позиций на основе interval и gap
-    // Обновление позиций на основе interval
     private updatePositions() {
         let positionsChanged = true;
-        let maxIterations = 10; // Предотвращаем бесконечный цикл
+        let maxIterations = 10;
         let iteration = 0;
 
         while (positionsChanged && iteration < maxIterations) {
             positionsChanged = false;
             iteration++;
 
-            // Получаем всех активных пилотов, отсортированных по текущей позиции
             const drivers = Array.from(this.raceState.drivers.entries())
                 .filter(([_, data]) => !data.retired)
                 .map(([num, data]) => ({ num, data }))
                 .sort((a, b) => a.data.position - b.data.position);
 
-            // Проходим по пилотам в порядке их позиций
             for (let i = 0; i < drivers.length - 1; i++) {
                 const current = drivers[i];
                 const next = drivers[i + 1];
 
-                // Рассчитываем interval (отставание следующего от текущего)
                 const interval = next.data.gap - current.data.gap;
 
-                // Если interval отрицательный, значит следующий пилот быстрее и должен быть впереди
                 if (interval < 0) {
-                    // Меняем позиции местами
                     const currentPosition = current.data.position;
                     const nextPosition = next.data.position;
 
@@ -295,8 +377,6 @@ class MockTelemetryGenerator {
                     console.log(`🔄 ОБГОН! ${this.getDriverTla(next.num)} (P${nextPosition}) overtakes ${this.getDriverTla(current.num)} (P${currentPosition}) [interval: ${interval.toFixed(3)}s]`);
 
                     positionsChanged = true;
-
-                    // После обмена перезапускаем проверку сначала
                     break;
                 }
             }
@@ -307,51 +387,57 @@ class MockTelemetryGenerator {
         }
     }
 
-    // Вспомогательный метод для получения TLA пилота
     private getDriverTla(racingNumber: string): string {
         const driver = REAL_DRIVERS.find(d => d.racing_number === racingNumber);
         return driver?.identity.tla || racingNumber;
     }
 
-
-
     private updateSectors(snapshotNumber: number) {
         const progressInLap = (snapshotNumber % this.SNAPSHOTS_PER_LAP) / this.SNAPSHOTS_PER_LAP;
 
         for (const [_, data] of this.raceState.drivers) {
-            if (data.retired || data.inPit || data.laps === 0) continue;
+            if (data.retired || data.inPit) continue;
+
+            if (data.laps === 0) {
+                data.currentSectorTimes = { s1: null, s2: null, s3: null };
+                continue;
+            }
 
             const totalTime = data.lastLapTime || this.LAP_DURATION_SEC;
+
             const sector1Time = 42.5 * (totalTime / this.LAP_DURATION_SEC);
             const sector2Time = 30.0 * (totalTime / this.LAP_DURATION_SEC);
             const sector3Time = 17.5 * (totalTime / this.LAP_DURATION_SEC);
 
-            // S1: 0% - 47% круга
             if (progressInLap < 0.47) {
-                data.currentSectorTimes.s1 = null;
-                data.currentSectorTimes.s2 = null;
-                data.currentSectorTimes.s3 = null;
+                if (data.currentSectorTimes.s1 === null) {
+                    const s1 = sector1Time + (Math.random() - 0.5) * 0.4;
+                    data.currentSectorTimes.s1 = Math.max(41, Math.min(44, s1));
+                }
+                data.currentSectorTimes.s2 = data.currentSectorTimes.s2 || null;
+                data.currentSectorTimes.s3 = data.currentSectorTimes.s3 || null;
             }
-            // S2: 47% - 80% круга
             else if (progressInLap < 0.80) {
                 if (data.currentSectorTimes.s1 === null) {
                     const s1 = sector1Time + (Math.random() - 0.5) * 0.4;
                     data.currentSectorTimes.s1 = Math.max(41, Math.min(44, s1));
                 }
-                data.currentSectorTimes.s2 = null;
-                data.currentSectorTimes.s3 = null;
-            }
-            // S3: 80% - 99% круга
-            else if (progressInLap < 0.99) {
-                if (data.currentSectorTimes.s2 === null && data.currentSectorTimes.s1 !== null) {
+                if (data.currentSectorTimes.s2 === null) {
                     const s2 = sector2Time + (Math.random() - 0.5) * 0.3;
                     data.currentSectorTimes.s2 = Math.max(28, Math.min(32, s2));
                 }
-                data.currentSectorTimes.s3 = null;
+                data.currentSectorTimes.s3 = data.currentSectorTimes.s3 || null;
             }
-            // Финиш круга
             else {
-                if (data.currentSectorTimes.s3 === null && data.currentSectorTimes.s2 !== null) {
+                if (data.currentSectorTimes.s1 === null) {
+                    const s1 = sector1Time + (Math.random() - 0.5) * 0.4;
+                    data.currentSectorTimes.s1 = Math.max(41, Math.min(44, s1));
+                }
+                if (data.currentSectorTimes.s2 === null) {
+                    const s2 = sector2Time + (Math.random() - 0.5) * 0.3;
+                    data.currentSectorTimes.s2 = Math.max(28, Math.min(32, s2));
+                }
+                if (data.currentSectorTimes.s3 === null) {
                     const s3 = sector3Time + (Math.random() - 0.5) * 0.2;
                     data.currentSectorTimes.s3 = Math.max(16.5, Math.min(18.5, s3));
                 }
@@ -378,12 +464,6 @@ class MockTelemetryGenerator {
             data.lapTimes.push(lapTimeSeconds);
             data.tyreAge++;
 
-            // Сохраняем финальные времена секторов как часть круга
-            if (data.currentSectorTimes.s1 && data.currentSectorTimes.s2 && data.currentSectorTimes.s3) {
-                // Секторы уже заполнены
-            }
-
-            // Сбрасываем секторы для нового круга
             data.currentSectorTimes = { s1: null, s2: null, s3: null };
 
             const lapTimeStr = this.formatLapTime(lapTimeSeconds);
@@ -489,9 +569,8 @@ class MockTelemetryGenerator {
     generateSnapshot(snapshotNumber: number): RaceSnapshot {
         this.snapshotCount++;
 
-        // Обновляем состояние в правильном порядке
         this.updateGaps();
-        this.updatePositions(); // Позиции обновляются на основе gap
+        this.updatePositions();
         this.updateSectors(snapshotNumber);
         this.updateLaps(snapshotNumber);
         this.handlePitStops(snapshotNumber);
@@ -513,7 +592,6 @@ class MockTelemetryGenerator {
             trackStatusMessage = "YellowFlag";
         }
 
-        // Собираем всех пилотов и сортируем по позиции
         const driversList = Array.from(this.raceState.drivers.entries())
             .map(([num, data]) => ({
                 num,
@@ -522,34 +600,27 @@ class MockTelemetryGenerator {
             }))
             .sort((a, b) => a.data.position - b.data.position);
 
-        // Генерация гонщиков с правильным расчетом interval
-        const drivers = driversList.map((item, index) => {
+        const driversWithoutOverall = driversList.map((item) => {
             const { driver, data } = item;
 
             const isPersonalBest = data.bestLap.lap === data.laps;
-            const isOverallBest = isPersonalBest && data.position === 1;
+            const isOverallBest = false;
 
             const lastLapValue = data.lastLapTime ? this.formatLapTime(data.lastLapTime) : null;
 
-            // Правильный расчет interval - отставание до пилота ВПЕРЕДИ
             let intervalToAhead: string | null = null;
             if (data.position === 1) {
-                // Лидер: нет пилота впереди
                 intervalToAhead = null;
             } else {
-                // Находим пилота ВПЕРЕДИ (с позицией на 1 меньше)
                 const driverAhead = driversList.find(d => d.data.position === data.position - 1);
                 if (driverAhead) {
-                    // interval = gap текущего - gap пилота впереди
                     const gapDiff = data.gap - driverAhead.data.gap;
                     intervalToAhead = `+${gapDiff.toFixed(3)}`;
                 } else {
-                    // Если не нашли (ошибка), показываем просто gap
                     intervalToAhead = `+${data.gap.toFixed(3)}`;
                 }
             }
 
-            // Формирование секторов
             const sectors = [
                 {
                     sector: 1 as const,
@@ -572,7 +643,7 @@ class MockTelemetryGenerator {
                     value: data.currentSectorTimes.s3 !== null ? data.currentSectorTimes.s3.toFixed(3) : null,
                     stopped: false,
                     personal_fastest: isPersonalBest && data.currentSectorTimes.s3 !== null,
-                    overall_fastest: isOverallBest && data.currentSectorTimes.s3 !== null,
+                    overall_fastest: false,
                     segments: []
                 },
             ];
@@ -593,16 +664,16 @@ class MockTelemetryGenerator {
                         value: data.bestLap.value,
                         lap: data.bestLap.lap,
                         personal_fastest: isPersonalBest,
-                        overall_fastest: isOverallBest,
+                        overall_fastest: false,
                     } : { value: null, lap: 0, personal_fastest: false, overall_fastest: false },
                     last_lap: lastLapValue ? {
                         value: lastLapValue,
                         lap: data.laps,
                         personal_fastest: isPersonalBest,
-                        overall_fastest: isOverallBest,
+                        overall_fastest: false,
                     } : { value: null, lap: 0, personal_fastest: false, overall_fastest: false },
                     sectors,
-                    speeds: this.generateSpeeds(data.lastLapTime || 90, isPersonalBest, isOverallBest),
+                    speeds: this.generateSpeeds(data.lastLapTime || 90, isPersonalBest, false),
                 },
                 tyres: {
                     current_compound: data.compound,
@@ -628,53 +699,170 @@ class MockTelemetryGenerator {
             };
         });
 
-        // Остальной код генерации снапшота...
-        const race_control_messages: RaceSnapshot['race_control'] = [];
+        let bestLapTimeSeconds = Infinity;
+        let bestLapDriverIndex = -1;
 
-        if (trackStatus === "yellow" && snapshotNumber % 30 === 0) {
-            race_control_messages.push({
-                id: `yellow-${snapshotNumber}`,
-                utc: currentTime.toISOString(),
-                category: "flag",
-                message: "YELLOW FLAG IN SECTOR 2",
-                flag: "yellow",
-                scope: "track",
-                sector: 2,
-                mode: "yellow",
-            });
+        driversWithoutOverall.forEach((driver, idx) => {
+            if (driver.timing.best_lap.value) {
+                const lapTimeSec = this.parseLapTimeToSeconds(driver.timing.best_lap.value);
+                if (lapTimeSec < bestLapTimeSeconds) {
+                    bestLapTimeSeconds = lapTimeSec;
+                    bestLapDriverIndex = idx;
+                }
+            }
+        });
+
+        const drivers = driversWithoutOverall.map((driver, idx) => {
+            if (idx === bestLapDriverIndex) {
+                if (driver.timing.best_lap.value) {
+                    driver.timing.best_lap.overall_fastest = true;
+                }
+                if (driver.timing.last_lap.value && driver.timing.last_lap.lap === driver.timing.number_of_laps) {
+                    driver.timing.last_lap.overall_fastest = true;
+                }
+                driver.timing.sectors = driver.timing.sectors.map(sector => ({
+                    ...sector,
+                    overall_fastest: sector.personal_fastest
+                }));
+                driver.timing.speeds = {
+                    i1: { ...driver.timing.speeds.i1, overall_fastest: true },
+                    i2: { ...driver.timing.speeds.i2, overall_fastest: true },
+                    fl: { ...driver.timing.speeds.fl },
+                    st: { ...driver.timing.speeds.st },
+                };
+            }
+            return driver;
+        });
+
+// В методе generateSnapshot, замените генерацию race_control_messages на эту:
+
+const race_control_messages: RaceSnapshot['race_control'] = [];
+
+// Стартовое сообщение (только для первого снапшота)
+if (snapshotNumber === 1) {
+    race_control_messages.push({
+        id: `start-${snapshotNumber}`,
+        utc: currentTime.toISOString(),
+        category: "flag",
+        message: "GREEN LIGHT - PIT EXIT OPEN",
+        flag: "green",
+        scope: "track",
+        sector: null,
+        mode: "green",
+    });
+}
+
+// Генерируем сообщения в среднем каждые 15 снапшотов (30 секунд)
+const shouldGenerateMessage = snapshotNumber > 1 && Math.random() < 0.01; // ~7% шанс каждый снапшот
+
+if (shouldGenerateMessage) {
+    const driversList = Array.from(this.raceState.drivers.entries());
+    const activeDrivers = driversList.filter(([_, data]) => !data.retired);
+    
+    if (activeDrivers.length > 0) {
+        const randomIndex = Math.floor(Math.random() * RACE_CONTROL_MESSAGES.length);
+        const messageConfig = RACE_CONTROL_MESSAGES[randomIndex];
+        
+        let message = messageConfig.messageTemplate;
+        let flag = messageConfig.flag;
+        let skipMessage = false;
+        
+        // Заменяем шаблонные значения
+        if (message.includes('{car}')) {
+            const randomDriver = activeDrivers[Math.floor(Math.random() * activeDrivers.length)];
+            const driverInfo = REAL_DRIVERS.find(d => d.racing_number === randomDriver[0]);
+            message = message.replace('{car}', randomDriver[0]);
+            message = message.replace('{tla}', driverInfo?.identity.tla || '???');
         }
-
-        if (snapshotNumber === 1) {
-            race_control_messages.push({
-                id: `start-${snapshotNumber}`,
-                utc: currentTime.toISOString(),
-                category: "flag",
-                message: "GREEN LIGHT - PIT EXIT OPEN",
-                flag: "green",
-                scope: "track",
-                sector: null,
-                mode: "green",
-            });
+        
+        if (message.includes('{car1}')) {
+            const driver1 = activeDrivers[Math.floor(Math.random() * activeDrivers.length)];
+            let driver2 = activeDrivers[Math.floor(Math.random() * activeDrivers.length)];
+            // Чтобы не было одинаковых пилотов
+            while (driver2[0] === driver1[0] && activeDrivers.length > 1) {
+                driver2 = activeDrivers[Math.floor(Math.random() * activeDrivers.length)];
+            }
+            const driverInfo1 = REAL_DRIVERS.find(d => d.racing_number === driver1[0]);
+            const driverInfo2 = REAL_DRIVERS.find(d => d.racing_number === driver2[0]);
+            message = message.replace('{car1}', driver1[0]);
+            message = message.replace('{tla1}', driverInfo1?.identity.tla || '???');
+            message = message.replace('{car2}', driver2[0]);
+            message = message.replace('{tla2}', driverInfo2?.identity.tla || '???');
         }
-
-        if (Math.random() < 0.04 && snapshotNumber > 45) {
+        
+        if (message.includes('{carAhead}')) {
+            const driver = activeDrivers[Math.floor(Math.random() * activeDrivers.length)];
+            const driverAhead = activeDrivers.find(d => d[1].position === driver[1].position - 1);
+            if (driverAhead) {
+                const driverInfo = REAL_DRIVERS.find(d => d.racing_number === driver[0]);
+                const driverAheadInfo = REAL_DRIVERS.find(d => d.racing_number === driverAhead[0]);
+                message = message.replace('{car}', driver[0]);
+                message = message.replace('{tla}', driverInfo?.identity.tla || '???');
+                message = message.replace('{carAhead}', driverAhead[0]);
+                message = message.replace('{tlaAhead}', driverAheadInfo?.identity.tla || '???');
+            } else {
+                // Если нет пилота впереди (лидер), пропускаем это сообщение
+                skipMessage = true;
+            }
+        }
+        
+        if (message.includes('{time}')) {
+            const minutes = Math.floor(Math.random() * 2);
+            const seconds = (90 + Math.random() * 10).toFixed(3);
+            message = message.replace('{time}', `${minutes}:${seconds}`);
+        }
+        
+        if (message.includes('{lap}')) {
+            const currentLap = Math.floor(snapshotNumber / this.SNAPSHOTS_PER_LAP);
+            message = message.replace('{lap}', String(Math.max(1, currentLap - Math.floor(Math.random() * 5))));
+        }
+        
+        if (message.includes('{turn}')) {
+            const turns = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+            message = message.replace('{turn}', String(turns[Math.floor(Math.random() * turns.length)]));
+        }
+        
+        if (message.includes('{sector}')) {
+            const sectorNum = Math.floor(Math.random() * 3) + 1;
+            message = message.replace('{sector}', String(sectorNum));
+        }
+        
+        // Добавляем сообщение только если не пропущено
+        if (!skipMessage) {
             race_control_messages.push({
-                id: `drs-${snapshotNumber}`,
+                id: `message-${snapshotNumber}-${randomIndex}`,
                 utc: currentTime.toISOString(),
-                category: "drs",
-                message: "DRS ENABLED",
+                category: messageConfig.category,
+                message: message,
+                flag: flag,
                 scope: "track",
-                sector: null,
+                sector: message.includes('{sector}') ? (message.includes('SECTOR') ? parseInt(message.match(/SECTOR (\d)/)?.[1] || '0') : null) : null,
                 mode: null,
             });
+            
+            console.log(`📢 Race control: ${message}`);
+        }
+    }
+}
+
+        const team_radio: any[] = [];
+        const currentLap = Math.floor(snapshotNumber / this.SNAPSHOTS_PER_LAP);
+
+        // Каждый круг добавляем новое сообщение (начиная с 1 круга, всего 6 сообщений)
+        if (currentLap >= 1 && currentLap <= 6 && this.teamRadioIndex + 1 == currentLap) {
+            const radio = TEAM_RADIO_LIST[this.teamRadioIndex];
+
+            team_radio.push({
+                id: `radio-${snapshotNumber}-${radio.RacingNumber}`,
+                utc: radio.Utc,
+                racing_number: radio.RacingNumber,
+                path: radio.Path,
+                message: radio.message,
+            });
+            console.log(`📻 Team radio #${this.teamRadioIndex + 1}: ${radio.driver} (#${radio.RacingNumber}) on lap ${currentLap}: "${radio.message}"`);
+            this.teamRadioIndex++;
         }
 
-        const team_radio = Math.random() < 0.05 ? [{
-            id: `radio-${snapshotNumber}`,
-            utc: currentTime.toISOString(),
-            racing_number: drivers[Math.floor(Math.random() * drivers.length)].racing_number,
-            path: "/audio/team-radio-sample.mp3",
-        }] : [];
 
         return {
             schema_version: 1,
