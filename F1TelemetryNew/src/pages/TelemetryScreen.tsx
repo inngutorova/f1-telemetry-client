@@ -6,6 +6,7 @@ import { TelemetryBottomPanels } from "./components/BottomPanels";
 import { mockDrivers } from "../mocks/telemetryMock";
 import { mockRaceControlMessages, mockTeamRadio } from "../mocks/messageMock";
 import { useFakeStream } from "../features/telemetry/useFakeStream";
+import { useRealStream } from "../features/telemetry/useRealStream";
 import { useSnapshotStore } from "../entities/snapshot/model/snapshotStore";
 import { useMessagesStore } from "../entities/messages/model/messagesStore";
 import { TableSettingsModal } from "../features/settings/ui/TableSettingsModal";
@@ -16,7 +17,7 @@ interface TelemetryScreenProps {
 }
 
 export default function TelemetryScreen({ navigation, route }: TelemetryScreenProps) {
-    useFakeStream();
+    useRealStream();
 
     const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
 
