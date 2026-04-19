@@ -11,7 +11,10 @@ type Props = {
 export const TelemetryTable = ({ drivers }: Props) => {
   const { userSettings } = useSettingsStore();
 
-  const sortedDrivers = [...drivers].sort((a, b) => {
+  const filteredDrivers = drivers.filter(driver => driver.racing_number !== "_kf");
+
+
+  const sortedDrivers = [...filteredDrivers].sort((a, b) => {
     const posA = a.position ?? 999;
     const posB = b.position ?? 999;
     return posA - posB;
