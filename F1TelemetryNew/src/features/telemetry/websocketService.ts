@@ -11,6 +11,23 @@ type WebSocketMessage = {
 type MessageHandler = (snapshot: RaceSnapshot) => void;
 type StatusHandler = (connected: boolean) => void;
 
+const convertToSnakeCase = (obj: any): any => {
+  if (obj === null || typeof obj !== 'object') return obj;
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => convertToSnakeCase(item));
+  }
+  
+  const newObj: any = {};
+  for (const [key, value] of Object.entries(obj)) {
+    // Преобразуем camelCase в snake_case
+    const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    newObj[snakeKey] = convertToSnakeCase(value);
+  }
+  return newObj;
+};
+
+
 class WebSocketService {
   private ws: WebSocket | null = null;
   private messageHandlers: MessageHandler[] = [];
@@ -25,7 +42,8 @@ class WebSocketService {
   private getWebSocketUrl(): string {
     if (__DEV__) {
       if (Platform.OS === 'ios') {
-        return 'ws://172.31.38.95:3000';
+         // Узнать IP: ifconfig | grep "inet " | grep -v 127.0.0.1
+        return 'ws://192.168.0.101:3000';
       }
       if (Platform.OS === 'android') {
         return 'ws://10.0.2.2:3000';
@@ -66,26 +84,33 @@ class WebSocketService {
         // Определяем формат сообщения
         let snapshot: RaceSnapshot | null = null;
         
+        // Формат: прямой снапшот от сервера (camelCase)
         if (data.sequence !== undefined && data.drivers !== undefined) {
-          snapshot = data as RaceSnapshot;
-
-          this.lastSequence = snapshot.sequence;
-          
+          console.log('[WebSocket] Converting camelCase to snake_case...');
+          // Преобразуем camelCase в snake_case
+          const convertedData = convertToSnakeCase(data);
+          snapshot = convertedData as RaceSnapshot;
           console.log(`[WebSocket] ✅ Snapshot #${snapshot.sequence}, drivers: ${snapshot.drivers?.length}`);
-          this.notifyHandlers(snapshot);
         }
+        // Формат: обернутый снапшот
         else if (data.type === 'snapshot' && data.data) {
-          snapshot = data.data as RaceSnapshot;
+          const convertedData = convertToSnakeCase(data.data);
+          snapshot = convertedData as RaceSnapshot;
           console.log(`[WebSocket] ✅ Wrapped snapshot #${snapshot.sequence}`);
-          this.notifyHandlers(snapshot);
         }
         else {
           console.log('[WebSocket] Other message:', data.type || 'unknown');
+          return;
+        }
+        
+        if (snapshot) {
+          this.notifyHandlers(snapshot);
         }
       } catch (error) {
         console.error('[WebSocket] Failed to parse message:', error);
       }
     };
+
     
     this.ws.onclose = (event) => {
       console.log(`[WebSocket] Disconnected - code: ${event.code}, reason: ${event.reason}`);
@@ -121,7 +146,7 @@ class WebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({
         type: 'subscribe',
-        delay_ms: delayMs,
+        delay_ms: delayMs/1000,
       });
       this.ws.send(message);
       console.log(`[WebSocket] 📡 Subscribed with delay: ${delayMs}ms`);
@@ -130,9 +155,22 @@ class WebSocketService {
     }
   }
 
+  /**
+   * Обновление задержки (отставания)
+   * Отправляет на сервер сообщение типа "set_delay"
+   */
   updateDelay(delayMs: number) {
-    console.log(`[WebSocket] Updating delay to ${delayMs}ms`);
-    this.subscribe(delayMs);
+    this.currentDelayMs = delayMs;
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({
+        type: 'set_delay',
+        delay: delayMs/1000,
+      });
+      this.ws.send(message);
+      console.log(`[WebSocket] 📡 Delay updated: ${delayMs}ms (set_delay sent)`);
+    } else {
+      console.log(`[WebSocket] Cannot update delay - connection state: ${this.ws?.readyState}`);
+    }
   }
 
   disconnect() {

@@ -38,8 +38,8 @@ export const useRealStream = () => {
       
       setSnapshot(snapshot);
       
-      if (snapshot.race_control && snapshot.race_control.length > 0) {
-        addRaceControlMessages(snapshot.race_control);
+      if (snapshot.race_control_messages && snapshot.race_control_messages.length > 0) {
+        addRaceControlMessages(snapshot.race_control_messages);
       }
       
       if (snapshot.team_radio && snapshot.team_radio.length > 0) {

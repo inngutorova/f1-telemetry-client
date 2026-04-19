@@ -34,7 +34,7 @@ function generateAndSaveSnapshots(count: number = 5, outputDir: string = 'snapsh
     console.log(`   - Последовательность: ${snapshot.sequence}`);
     console.log(`   - Время: ${snapshot.source_timestamp}`);
     console.log(`   - Пилоты: ${snapshot.drivers.length}`);
-    console.log(`   - Сообщения race control: ${snapshot.race_control.length}`);
+    console.log(`   - Сообщения race control: ${snapshot.race_control_messages.length}`);
     console.log(`   - Team radio: ${snapshot.team_radio.length}\n`);
   });
 

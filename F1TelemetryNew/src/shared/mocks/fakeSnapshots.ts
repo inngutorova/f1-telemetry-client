@@ -736,7 +736,7 @@ class MockTelemetryGenerator {
 
 // В методе generateSnapshot, замените генерацию race_control_messages на эту:
 
-const race_control_messages: RaceSnapshot['race_control'] = [];
+const race_control_messages: RaceSnapshot['race_control_messages'] = [];
 
 // Стартовое сообщение (только для первого снапшота)
 if (snapshotNumber === 1) {
@@ -914,7 +914,7 @@ if (shouldGenerateMessage) {
                 wind_speed_mps: Math.random() * 3,
             },
             drivers,
-            race_control: race_control_messages,
+            race_control_messages: race_control_messages,
             team_radio,
         };
     }

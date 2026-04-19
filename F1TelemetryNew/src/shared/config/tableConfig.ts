@@ -13,7 +13,7 @@ export const tableColumns: TableColumn[] = [
     { key: "interval", title: "Interval", visible: true, width: 80 },
     { key: "lastLap", title: "Last Lap", visible: true, width: 90 },
     { key: "bestLap", title: "Best Lap", visible: true, width: 90 },
-    { key: "tyre", title: "Tyre", visible: true, width: 70 },
+   // { key: "tyre", title: "Tyre", visible: true, width: 70 },
     { key: "positionChange", title: "+/-", visible: true, width: 50 },
     { key: "sectors", title: "Sectors", visible: true, width: 140 },
 ];

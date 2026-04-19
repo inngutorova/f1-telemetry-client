@@ -16,6 +16,6 @@ export type RaceSnapshot = {
   weather?: WeatherData;
   drivers: DriverState[];
 
-  race_control: RaceControlMessage[];
+  race_control_messages: RaceControlMessage[];
   team_radio: TeamRadioCapture[];
 };

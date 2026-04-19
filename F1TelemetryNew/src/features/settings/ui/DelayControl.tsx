@@ -10,6 +10,7 @@ import {
 import { Icon } from '../../../shared/ui/Icon';
 import { icons } from '../../../shared/ui/icons';
 import { useSettingsStore } from '../../../features/settings/model/settingsStore';
+import { websocketService } from '../../telemetry/websocketService';
 
 interface DelayControlProps {
   totalLaps: number;
@@ -32,6 +33,7 @@ export const DelayControl: React.FC<DelayControlProps> = ({ totalLaps }) => {
     const finalDelayMs = Math.max(0, newDelayMs);
     setDelayMs(finalDelayMs);
     setUserSettings({ delayMs: finalDelayMs });
+    websocketService.updateDelay(finalDelayMs);
   }, [setUserSettings]);
 
   const updatePauseState = useCallback((newPausedState: boolean) => {
