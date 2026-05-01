@@ -1,4 +1,3 @@
-// src/shared/utils/driverDataCache.ts
 import { DriverIdentity, DriverTiming, DriverTyres, DriverTrackState, SectorInfo } from "../../entities/driver/model/types";
 
 export interface CachedDriverData {
@@ -17,7 +16,7 @@ export interface CachedDriverData {
     interval_to_ahead?: string | null;
     best_lap?: any;
     last_lap?: any;
-    sectors: Map<number, SectorInfo>; // Храним сектора по их номеру
+    sectors: Map<number, SectorInfo>; 
     speeds?: any;
   };
   tyres?: DriverTyres;
@@ -28,7 +27,6 @@ export interface CachedDriverData {
 class DriverDataCache {
   private cache: Map<string, CachedDriverData> = new Map();
 
-  // Проверка, является ли значение валидным (не пустая строка, не null, не unknown)
   private isValidValue(value: any): boolean {
     if (value === null || value === undefined) return false;
     if (typeof value === 'string') {
@@ -37,7 +35,6 @@ class DriverDataCache {
     return true;
   }
 
-  // Обновить identity гонщика
   private updateIdentity(racingNumber: string, identity: DriverIdentity): Partial<CachedDriverData['identity']> {
     const existing = this.cache.get(racingNumber);
     const updated: Partial<CachedDriverData['identity']> = {};
@@ -66,13 +63,12 @@ class DriverDataCache {
     return updated;
   }
 
-// Обновить сектора гонщика
+
 private updateSectors(racingNumber: string, sectors: SectorInfo[]): Map<number, SectorInfo> {
   const existing = this.cache.get(racingNumber);
   const sectorsMap = existing?.timing.sectors ? new Map(existing.timing.sectors) : new Map();
   
   sectors.forEach(sector => {
-    // Проверяем, что значение валидное (не null, не undefined, не пустая строка)
     const hasValidValue = sector.value !== null && 
                           sector.value !== undefined && 
                           sector.value !== '';
@@ -85,7 +81,6 @@ private updateSectors(racingNumber: string, sectors: SectorInfo[]): Map<number, 
   return sectorsMap;
 }
 
-  // Обновить timing гонщика
   private updateTiming(racingNumber: string, timing: DriverTiming): Partial<CachedDriverData['timing']> {
     const existing = this.cache.get(racingNumber);
     const updated: Partial<CachedDriverData['timing']> = {};
@@ -111,7 +106,6 @@ private updateSectors(racingNumber: string, sectors: SectorInfo[]): Map<number, 
       updated.speeds = existing.timing.speeds;
     }
     
-    // Сектора обновляем отдельно
     if (timing.sectors && timing.sectors.length > 0) {
       updated.sectors = this.updateSectors(racingNumber, timing.sectors);
     } else if (existing?.timing.sectors) {
@@ -121,33 +115,26 @@ private updateSectors(racingNumber: string, sectors: SectorInfo[]): Map<number, 
     return updated;
   }
 
-// Обновить tyres гонщика
 private updateTyres(racingNumber: string, tyres: DriverTyres): DriverTyres | undefined {
   const existing = this.cache.get(racingNumber);
   
   if (!tyres) return existing?.tyres;
   
-  // Если есть существующие данные в кэше
   if (existing?.tyres) {
-    // Создаем обновленный объект, беря значения из живых данных где они валидны
     const updatedTyres: DriverTyres = { ...existing.tyres };
     
-    // Обновляем tyre_age_laps (всегда берем из живых данных, если есть)
     if (tyres.tyre_age_laps !== undefined && tyres.tyre_age_laps !== null) {
       updatedTyres.tyre_age_laps = tyres.tyre_age_laps;
     }
     
-    // Обновляем is_new
     if (tyres.is_new !== undefined && tyres.is_new !== null) {
       updatedTyres.is_new = tyres.is_new;
     }
     
-    // Обновляем current_compound только если он валидный (не unknown, не пустой)
     if (this.isValidValue(tyres.current_compound) && tyres.current_compound !== 'unknown') {
       updatedTyres.current_compound = tyres.current_compound;
     }
     
-    // Обновляем stints если они есть
     if (tyres.stints && tyres.stints.length > 0) {
       updatedTyres.stints = tyres.stints;
     }
@@ -155,12 +142,10 @@ private updateTyres(racingNumber: string, tyres: DriverTyres): DriverTyres | und
     return updatedTyres;
   }
   
-  // Если нет кэша, сохраняем только если compound валидный
   if (this.isValidValue(tyres.current_compound) && tyres.current_compound !== 'unknown') {
     return tyres;
   }
   
-  // Если нет кэша и compound невалидный, но есть tyre_age_laps - создаем базовый объект
   if (tyres.tyre_age_laps !== undefined) {
     return {
       current_compound: 'unknown',
@@ -173,7 +158,6 @@ private updateTyres(racingNumber: string, tyres: DriverTyres): DriverTyres | und
   return undefined;
 }
 
-  // Обновить track гонщика
   private updateTrack(racingNumber: string, track: DriverTrackState): DriverTrackState | undefined {
     const existing = this.cache.get(racingNumber);
     
@@ -183,7 +167,6 @@ private updateTyres(racingNumber: string, tyres: DriverTyres): DriverTyres | und
     return existing?.track;
   }
 
-  // Обновить все данные гонщика
   updateDriverData(racingNumber: string, driverData: {
     identity?: DriverIdentity;
     timing?: DriverTiming;
@@ -224,7 +207,6 @@ private updateTyres(racingNumber: string, tyres: DriverTyres): DriverTyres | und
     this.cache.set(racingNumber, cachedData);
   }
 
-  // Получить обогащенные данные гонщика
 getEnrichedDriver(racingNumber: string, liveData: {
   identity?: DriverIdentity;
   timing?: DriverTiming;
@@ -233,7 +215,6 @@ getEnrichedDriver(racingNumber: string, liveData: {
 }): any {
   const cached = this.cache.get(racingNumber);
   
-  // Функция для получения tyres
   const getTyres = (): DriverTyres | undefined => {
     if (liveData.tyres) {
       if (this.isValidValue(liveData.tyres.current_compound) && liveData.tyres.current_compound !== 'unknown') {
@@ -250,22 +231,17 @@ getEnrichedDriver(racingNumber: string, liveData: {
     return undefined;
   };
   
-  // Функция для объединения секторов
 const getMergedSectors = (): SectorInfo[] => {
-  // Создаем карту секторов из кэша
   const sectorsMap = new Map<number, SectorInfo>();
   
-  // Добавляем сектора из кэша
   if (cached?.timing.sectors) {
     cached.timing.sectors.forEach((sector, sectorNumber) => {
       sectorsMap.set(sectorNumber, { ...sector });
     });
   }
   
-  // Обновляем сектора из живых данных (только если value валидный)
   if (liveData.timing?.sectors && liveData.timing.sectors.length > 0) {
     liveData.timing.sectors.forEach(sector => {
-      // Проверяем, что value валидный (не null, не undefined, не пустая строка)
       const hasValidValue = sector.value !== null && 
                             sector.value !== undefined && 
                             sector.value !== '';
@@ -276,11 +252,9 @@ const getMergedSectors = (): SectorInfo[] => {
     });
   }
   
-  // Преобразуем карту обратно в массив
   return Array.from(sectorsMap.values()).sort((a, b) => a.sector - b.sector);
 };
   
-  // Если нет кэша - возвращаем живые данные как есть
   if (!cached) {
     return {
       identity: {
@@ -303,7 +277,6 @@ const getMergedSectors = (): SectorInfo[] => {
     };
   }
   
-  // Обогащаем живыми данными, объединяя с кэшем
   return {
     identity: {
       tla: this.isValidValue(liveData.identity?.tla) ? liveData.identity!.tla : cached.identity.tla,
@@ -320,7 +293,7 @@ const getMergedSectors = (): SectorInfo[] => {
       interval_to_ahead: this.isValidValue(liveData.timing?.interval_to_ahead) ? liveData.timing!.interval_to_ahead : cached.timing.interval_to_ahead,
       best_lap: this.isValidValue(liveData.timing?.best_lap?.value) ? liveData.timing!.best_lap : cached.timing.best_lap,
       last_lap: this.isValidValue(liveData.timing?.last_lap?.value) ? liveData.timing!.last_lap : cached.timing.last_lap,
-      sectors: getMergedSectors(), // ← ОБЪЕДИНЯЕМ сектора
+      sectors: getMergedSectors(),
       speeds: liveData.timing?.speeds && Object.values(liveData.timing.speeds).some(s => this.isValidValue(s?.value)) 
         ? liveData.timing.speeds 
         : cached.timing.speeds,
@@ -330,7 +303,6 @@ const getMergedSectors = (): SectorInfo[] => {
   };
 }
 
-  // Очистить кэш
   clear() {
     this.cache.clear();
   }

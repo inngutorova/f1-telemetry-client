@@ -1,4 +1,3 @@
-// src/pages/HomeScreen.tsx
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -37,7 +36,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   };
 
   const handleSessionPress = (session: UISession, watchFromStart: boolean) => {
-    // Навигация на экран телеметрии
     navigation.navigate('Telemetry', {
       sessionId: session.id,
       sessionMeta: session.meta,

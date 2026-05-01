@@ -1,4 +1,3 @@
-// src/pages/components/TelemetryHeader.tsx
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { DelayControl } from "../../features/settings/ui/DelayControl";
 import { Icon } from '../../shared/ui/Icon';
@@ -28,7 +27,6 @@ export const TelemetryHeader = ({
   const sessionType = snapshot?.session?.session_type;
   const remainingMs = snapshot?.race_state?.clock?.remaining_ms;
   
-  // Гонка или спринт - показываем круги
   if (sessionType === 'race' || sessionType === 'sprint') {
     const label = sessionType === 'sprint' ? 'SPRINT' : 'RACE';
     return (
@@ -47,7 +45,6 @@ export const TelemetryHeader = ({
     );
   }
   
-  // Квалификация или практика - показываем таймер
   let sessionLabel = 'PRACTICE';
   if (sessionType === 'qualifying') {
     sessionLabel = 'QUALIFYING';

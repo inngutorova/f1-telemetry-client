@@ -1,9 +1,6 @@
 import { ScrollView, FlatList, View, Text, StyleSheet } from "react-native";
 import { DriverRow } from "../../entities/driver/DriverRow";
 import { DriverState } from '../../entities/driver/model/types'; 
-import { tableColumns } from "../../shared/config/tableConfig";
-import { useSettingsStore } from "../../features/settings/model/settingsStore";
-import { useSnapshotStore } from "../../entities/snapshot/model/snapshotStore";
 import { useVisibleColumns } from "../../features/settings/useVisibleColumns";
 
 type Props = {
@@ -20,7 +17,6 @@ export const TelemetryTable = ({ drivers }: Props) => {
     return posA - posB;
   });
 
-  // Получаем колонки в правильном порядке из настроек
 
   const visibleColumns = useVisibleColumns();
 

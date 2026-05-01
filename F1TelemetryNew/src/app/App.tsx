@@ -10,10 +10,8 @@ export default function App() {
   useEffect(() => {
     loadSettings();
   }, []);
-
-  // ⛔️ не рендерим приложение, пока настройки не загрузились
   if (isLoading) {
-    return null; // или splash экран
+    return null; 
   }
 
   return (

@@ -27,10 +27,9 @@ export default function TelemetryScreen({ navigation, route }: TelemetryScreenPr
     const leader = snapshot.drivers.find(d => d.position === 1);
     const currentLap = leader?.timing.number_of_laps ?? 0;
     
-    // Определяем тип сессии и общее количество кругов (только для гонок)
     const sessionType = snapshot.session?.session_type;
     const isRace = sessionType === 'race' || sessionType === 'sprint';
-    const totalLaps = isRace ? 53 : 0; // Для гонки/спринта показываем круги, для квалы/практики - нет
+    const totalLaps = isRace ? 53 : 0;
 
     const handleSettingsPress = () => {
         console.log("open columns settings");

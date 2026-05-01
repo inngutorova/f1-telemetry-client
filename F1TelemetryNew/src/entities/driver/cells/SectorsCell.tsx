@@ -1,4 +1,3 @@
-// src/entities/driver/cells/SectorsCell.tsx
 import { Text, View, StyleSheet } from "react-native";
 import { DriverState } from "../model/types";
 import { tableColumns } from "../../../shared/config/tableConfig";

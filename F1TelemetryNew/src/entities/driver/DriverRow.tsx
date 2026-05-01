@@ -1,4 +1,3 @@
-// src/entities/driver/DriverRow.tsx
 import { View, StyleSheet } from "react-native";
 import { PositionCell } from "./cells/PositionCell";
 import { PositionChangeCell } from "./cells/PositionChangeCell";

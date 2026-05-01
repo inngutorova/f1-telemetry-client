@@ -19,8 +19,8 @@ export default function AppNavigator() {
           headerTitleStyle: {
             fontWeight: 'bold',
           },
-          cardStyle: { backgroundColor: '#0B0F1A' }, // Добавляем фон для карточек
-          animationEnabled: false, // Отключаем анимацию (опционально)
+          cardStyle: { backgroundColor: '#0B0F1A' }, 
+          animationEnabled: false,
         }}
       >
         <Stack.Screen

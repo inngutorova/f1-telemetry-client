@@ -1,4 +1,3 @@
-// src/entities/messages/model/messagesStore.ts
 import { create } from "zustand";
 import { RaceControlMessage, TeamRadioCapture } from "../../session/model/types";
 
@@ -19,7 +18,6 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
     if (!messages || messages.length === 0) return;
     
     set((state) => {
-      // Избегаем дубликатов по id
       const existingIds = new Set(state.raceControlMessages.map(m => m.id));
       const newMessages = messages.filter(m => !existingIds.has(m.id));
       
@@ -33,7 +31,6 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
     if (!messages || messages.length === 0) return;
     
     set((state) => {
-      // Избегаем дубликатов по id
       const existingIds = new Set(state.teamRadioMessages.map(m => m.id));
       const newMessages = messages.filter(m => !existingIds.has(m.id));
       

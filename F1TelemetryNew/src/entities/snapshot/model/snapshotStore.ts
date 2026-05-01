@@ -1,4 +1,3 @@
-// src/entities/snapshot/model/snapshotStore.ts
 import { create } from "zustand";
 import { RaceSnapshot } from "./types";
 
@@ -24,7 +23,7 @@ export const useSnapshotStore = create<SnapshotState>((set, get) => ({
         console.log('[SnapshotStore] Drivers count:', snapshot.drivers?.length);
 
         set((state) => {
-            const newBuffer = [...state.buffer, snapshot].slice(-100); // увеличил буфер до 100
+            const newBuffer = [...state.buffer, snapshot].slice(-100);
             const initialSnapshot = state.initialSnapshot ?? snapshot;
             return {
                 currentSnapshot: snapshot,

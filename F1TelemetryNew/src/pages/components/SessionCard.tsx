@@ -1,4 +1,3 @@
-// src/widgets/SessionCard/SessionCard.tsx
 import React, { useMemo } from 'react';
 import {
   View,

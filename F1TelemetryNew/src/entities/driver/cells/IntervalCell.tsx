@@ -1,4 +1,3 @@
-// src/entities/driver/cells/IntervalCell.tsx
 import { Text, View, StyleSheet } from "react-native";
 import { DriverState } from "../model/types";
 import { tableColumns } from "../../../shared/config/tableConfig";
@@ -19,12 +18,6 @@ export const IntervalCell = ({ driver }: Props) => {
       </View>
     );
   }
-  
-  // Находим пилота впереди (с позицией на 1 меньше)
-  const currentPosition = driver.position ?? 0;
-  const driverAhead = currentSnapshot.drivers.find(
-    (d) => d.position === currentPosition - 1
-  );
   
   const interval = driver.timing.interval_to_ahead ?? null;
   

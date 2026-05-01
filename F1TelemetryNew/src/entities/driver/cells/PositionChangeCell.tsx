@@ -1,4 +1,3 @@
-// src/entities/driver/cells/PositionChangeCell.tsx
 import { Text, View, StyleSheet } from "react-native";
 import { DriverState } from "../model/types";
 import { tableColumns } from "../../../shared/config/tableConfig";
@@ -30,9 +29,9 @@ export const PositionChangeCell = ({ driver }: Props) => {
   const positionChange = initialPosition - currentPosition; // положительное = прогресс
   
   const getChangeColor = () => {
-    if (positionChange > 0) return "#4CAF50"; // зеленый - прогресс
-    if (positionChange < 0) return "#FF5252"; // красный - потеря
-    return "#AAB4C3"; // серый - без изменений
+    if (positionChange > 0) return "#4CAF50";
+    if (positionChange < 0) return "#FF5252";
+    return "#AAB4C3";
   };
   
   const getChangeSymbol = () => {

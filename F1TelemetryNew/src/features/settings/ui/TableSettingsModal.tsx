@@ -1,4 +1,3 @@
-// src/features/settings/ui/TableSettingsModal.tsx
 import React, { useState, useEffect } from 'react';
 import {
     Modal,
@@ -37,7 +36,6 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
 
     useEffect(() => {
         if (visible) {
-            // Получаем только колонки, разрешенные для текущего типа сессии
             const allowedColumns = tableColumns.filter(col => 
                 allowedColumnKeys.includes(col.key)
             );
@@ -45,7 +43,6 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
             let orderedColumns: TableColumn[];
             
             if (userSettings.columnsOrder && userSettings.columnsOrder.length > 0) {
-                // Сортируем колонки согласно сохраненному порядку, но только разрешенные
                 orderedColumns = userSettings.columnsOrder
                     .filter(key => allowedColumnKeys.includes(key))
                     .map(key => {
@@ -60,14 +57,12 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
                     })
                     .filter((col): col is TableColumn => col !== null);
                 
-                // Добавляем новые разрешенные колонки, которых нет в сохраненном порядке
                 const existingKeys = new Set(orderedColumns.map(c => c.key));
                 const newColumns = allowedColumns.filter(col => !existingKeys.has(col.key));
                 if (newColumns.length > 0) {
                     orderedColumns = [...orderedColumns, ...newColumns];
                 }
             } else {
-                // Если нет сохраненного порядка, используем стандартный порядок разрешенных колонок
                 orderedColumns = allowedColumns.map(col => ({
                     ...col,
                     visible: userSettings.columnsVisible[col.key] ?? col.visible,
@@ -98,17 +93,13 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
     };
 
     const handleSave = () => {
-        // Сохраняем порядок и видимость колонок (только для разрешенных)
         const columnsVisible: Record<string, boolean> = {};
         const columnsOrder = columns.map(col => col.key);
         
-        // Сохраняем текущие настройки для разрешенных колонок
         columns.forEach(col => {
             columnsVisible[col.key] = col.visible;
         });
         
-        // Для колонок, которые не входят в разрешенный набор, сохраняем их видимость как false,
-        // чтобы при переключении типа сессии они не появились
         tableColumns.forEach(col => {
             if (!allowedColumnKeys.includes(col.key)) {
                 columnsVisible[col.key] = false;
@@ -178,7 +169,6 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
         </View>
     );
 
-    // Определяем заголовок модалки в зависимости от типа сессии
     const getModalTitle = () => {
         switch (sessionType) {
             case 'race': return 'Race Columns';

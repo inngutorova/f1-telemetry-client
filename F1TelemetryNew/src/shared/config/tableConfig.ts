@@ -1,4 +1,3 @@
-// src/shared/config/tableConfig.ts
 export interface TableColumn {
     key: string;
     title: string;

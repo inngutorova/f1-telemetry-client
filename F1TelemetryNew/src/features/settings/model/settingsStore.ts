@@ -1,4 +1,3 @@
-// src/entities/settings/model/settingsStore.ts
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -7,7 +6,7 @@ const STORAGE_KEY = "@user_settings";
 export type UserSettings = {
   delayMs: number;
   columnsVisible: Record<string, boolean>;
-  columnsOrder: string[]; // Добавим порядок колонок
+  columnsOrder: string[]; 
 };
 
 interface SettingsState {
@@ -36,7 +35,6 @@ const DEFAULT_SETTINGS: UserSettings = {
 
 };
 
-// Проверяем, доступен ли AsyncStorage
 const isAsyncStorageAvailable = () => {
   try {
     return AsyncStorage && typeof AsyncStorage.getItem === 'function';
@@ -53,13 +51,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set((state) => ({
       userSettings: { ...state.userSettings, ...settings },
     }));
-    // Автоматически сохраняем при изменении
     get().saveSettings();
   },
 
   loadSettings: async () => {
     try {
-      // Проверяем доступность AsyncStorage
       if (!isAsyncStorageAvailable()) {
         console.warn("AsyncStorage is not available, using default settings");
         return;
@@ -86,7 +82,6 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
   saveSettings: async () => {
     try {
-      // Проверяем доступность AsyncStorage
       if (!isAsyncStorageAvailable()) {
         console.warn("AsyncStorage is not available, settings not saved");
         return;

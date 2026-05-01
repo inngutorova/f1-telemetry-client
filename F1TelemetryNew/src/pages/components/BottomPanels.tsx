@@ -1,4 +1,3 @@
-// src/pages/components/BottomPanels.tsx
 import React, { useState } from "react";
 import { View, Text, StyleSheet, FlatList, Pressable, Dimensions } from "react-native";
 import { RaceControlMessage, TeamRadioCapture } from "../../entities/session/model/types";
@@ -13,7 +12,6 @@ type Props = {
     snapshot: RaceSnapshot;
 };
 
-// Функция для получения цвета категории
 const getCategoryColor = (category: string, flag?: string): string => {
     switch (category) {
         case "flag":

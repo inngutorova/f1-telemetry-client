@@ -1,4 +1,3 @@
-// src/features/telemetry/websocketService.ts
 import { Platform } from 'react-native';
 import { RaceSnapshot } from "../../entities/snapshot/model/types";
 import { driverDataCache } from '../../shared/utils/driverDataCache';
@@ -69,7 +68,6 @@ class WebSocketService {
             this.notifyStatusChange(true);
             this.subscribe(this.currentDelayMs);
 
-            // Запускаем ping каждые 10 секунд для поддержания соединения
             this.startPingInterval();
         };
 
@@ -77,18 +75,14 @@ class WebSocketService {
             try {
                 const data = JSON.parse(event.data);
 
-                // Определяем формат сообщения
                 let snapshot: RaceSnapshot | null = null;
 
-                // Формат: прямой снапшот от сервера (camelCase)
                 if (data.sequence !== undefined && data.drivers !== undefined) {
                     console.log('[WebSocket] Converting camelCase to snake_case...');
-                    // Преобразуем camelCase в snake_case
                     const convertedData = convertToSnakeCase(data);
                     snapshot = convertedData as RaceSnapshot;
                     console.log(`[WebSocket] ✅ Snapshot #${snapshot.sequence}, drivers: ${snapshot.drivers?.length}`);
                 }
-                // Формат: обернутый снапшот
                 else if (data.type === 'snapshot' && data.data) {
                     const convertedData = convertToSnakeCase(data.data);
                     snapshot = convertedData as RaceSnapshot;
@@ -100,7 +94,6 @@ class WebSocketService {
                 }
 
                 if (snapshot) {
-                    // Обновляем кэш данными из снапшота (только валидные значения)
                     snapshot.drivers?.forEach(driver => {
                         if (driver.racing_number && driver.racing_number !== '_kf') {
                             driverDataCache.updateDriverData(driver.racing_number, {
@@ -112,7 +105,6 @@ class WebSocketService {
                         }
                     });
 
-                    // Обогащаем снапшот данными из кэша
                     const enrichedDrivers = snapshot.drivers.map(driver => {
                         if (driver.racing_number === '_kf') return driver;
 
@@ -189,10 +181,6 @@ class WebSocketService {
         }
     }
 
-    /**
-     * Обновление задержки (отставания)
-     * Отправляет на сервер сообщение типа "set_delay"
-     */
     updateDelay(delayMs: number) {
         this.currentDelayMs = delayMs;
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {

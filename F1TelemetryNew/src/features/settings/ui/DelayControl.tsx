@@ -1,4 +1,3 @@
-// src/features/delay/ui/DelayControl.tsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -24,7 +23,6 @@ export const DelayControl: React.FC<DelayControlProps> = ({ totalLaps }) => {
   
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  // Синхронизация с хранилищем
   useEffect(() => {
     setDelayMs(userSettings.delayMs || 0);
   }, [userSettings.delayMs]);
@@ -40,7 +38,6 @@ export const DelayControl: React.FC<DelayControlProps> = ({ totalLaps }) => {
     setIsPaused(newPausedState);
   }, []);
 
-  // Эффект для увеличения delay на паузе
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -84,7 +81,6 @@ export const DelayControl: React.FC<DelayControlProps> = ({ totalLaps }) => {
   const handlePlayPause = () => {
     const newPausedState = !isPaused;
     updatePauseState(newPausedState);
-    // Не сбрасываем delay при выходе из паузы
   };
 
   const handleReset = () => {

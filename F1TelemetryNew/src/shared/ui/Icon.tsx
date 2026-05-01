@@ -1,4 +1,3 @@
-// src/shared/ui/Icon.tsx
 import React from 'react';
 import { Image, ImageSourcePropType, StyleSheet } from 'react-native';
 

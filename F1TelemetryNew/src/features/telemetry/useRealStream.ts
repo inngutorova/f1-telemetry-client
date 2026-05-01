@@ -17,7 +17,6 @@ export const useRealStream = () => {
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const unsubscribeStatusRef = useRef<(() => void) | null>(null);
 
-  // Подписка на изменение delay
   useEffect(() => {
     const delayMs = userSettings.delayMs || 0;
     if (isConnected) {
@@ -25,14 +24,11 @@ export const useRealStream = () => {
     }
   }, [userSettings.delayMs, isConnected]);
 
-  // Управление WebSocket подключением
   useEffect(() => {
-    // Подписываемся на статус подключения
     unsubscribeStatusRef.current = websocketService.onStatusChange((connected) => {
       setIsConnected(connected);
     });
 
-    // Подписываемся на сообщения
     unsubscribeRef.current = websocketService.onMessage((snapshot) => {
       console.log(`[RealStream] Received snapshot ${snapshot.sequence}`);
       
@@ -47,7 +43,6 @@ export const useRealStream = () => {
       }
     });
 
-    // Подключаемся с текущим delay
     websocketService.connect(userSettings.delayMs || 0);
 
     return () => {
