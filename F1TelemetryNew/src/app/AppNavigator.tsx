@@ -3,6 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { HomeScreen } from '../pages/HomeScreen';
 import TelemetryScreen from '../pages/TelemetryScreen';
+import { SplashScreen } from '../pages/SplashScreen';
 
 const Stack = createStackNavigator();
 
@@ -22,24 +23,25 @@ export default function AppNavigator() {
           animationEnabled: false, // Отключаем анимацию (опционально)
         }}
       >
-        <Stack.Screen 
-          name="Home" 
-          component={HomeScreen} 
-          options={{ 
-            title: 'F1 Telemetry', 
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: 'F1 Telemetry',
             headerShown: false,
             cardStyle: { backgroundColor: '#0B0F1A' }
           }}
         />
-        <Stack.Screen 
-          name="Telemetry" 
-          component={TelemetryScreen} 
-          options={{ 
-            title: 'Telemetry', 
+        <Stack.Screen
+          name="Telemetry"
+          component={TelemetryScreen}
+          options={{
+            title: 'Telemetry',
             headerShown: false,
             cardStyle: { backgroundColor: '#0B0F1A' }
           }}
         />
+        <Stack.Screen name="Loading" component={SplashScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

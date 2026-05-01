@@ -46,7 +46,7 @@ export const DelayControl: React.FC<DelayControlProps> = ({ totalLaps }) => {
     
     if (isPaused) {
       interval = setInterval(() => {
-        updateDelay(delayMs + 2000);
+        updateDelay(delayMs + 2);
       }, 2000);
     }
     
@@ -64,7 +64,7 @@ export const DelayControl: React.FC<DelayControlProps> = ({ totalLaps }) => {
   }, [isExpanded]);
 
   const formatDelay = (milliseconds: number): string => {
-    const totalSeconds = Math.floor(milliseconds / 1000);
+    const totalSeconds = Math.floor(milliseconds);
     if (totalSeconds === 0) return 'LIVE';
     return `-${totalSeconds}s`;
   };
@@ -74,11 +74,11 @@ export const DelayControl: React.FC<DelayControlProps> = ({ totalLaps }) => {
   };
 
   const handleBackward = () => {
-    updateDelay(delayMs + 2000);
+    updateDelay(delayMs + 2);
   };
 
   const handleForward = () => {
-    updateDelay(delayMs - 2000);
+    updateDelay(delayMs - 2);
   };
 
   const handlePlayPause = () => {

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { DelayControl } from "../../features/settings/ui/DelayControl";
 import { Icon } from '../../shared/ui/Icon';
 import { icons } from '../../shared/ui/icons';
+import { useSnapshotStore } from "../../entities/snapshot/model/snapshotStore";
 
 type Props = {
   currentLap: number;
@@ -10,24 +11,59 @@ type Props = {
   onPressSettings: () => void;
 };
 
+const formatTime = (ms: number | null | undefined): string => {
+  if (!ms || ms <= 0) return '00:00';
+  const totalSeconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+};
+
 export const TelemetryHeader = ({
   currentLap,
   totalLaps,
   onPressSettings,
 }: Props) => {
+  const snapshot = useSnapshotStore((s) => s.currentSnapshot);
+  const sessionType = snapshot?.session?.session_type;
+  const remainingMs = snapshot?.race_state?.clock?.remaining_ms;
+  
+  // Гонка или спринт - показываем круги
+  if (sessionType === 'race' || sessionType === 'sprint') {
+    const label = sessionType === 'sprint' ? 'SPRINT' : 'RACE';
+    return (
+      <View style={styles.container}>
+        <DelayControl totalLaps={totalLaps} />
+        
+        <View style={styles.center}>
+          <Text style={styles.label}>{label}</Text>
+          <Text style={styles.value}>Lap {currentLap} / {totalLaps}</Text>
+        </View>
+        
+        <TouchableOpacity onPress={onPressSettings}>
+          <Icon source={icons.settings} size={27} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+  
+  // Квалификация или практика - показываем таймер
+  let sessionLabel = 'PRACTICE';
+  if (sessionType === 'qualifying') {
+    sessionLabel = 'QUALIFYING';
+  }
+  
   return (
     <View style={styles.container}>
-      {/* LEFT - Delay Control */}
       <DelayControl totalLaps={totalLaps} />
-
-      {/* CENTER */}
-      <Text style={styles.centerText}>
-        Lap {currentLap} / {totalLaps}
-      </Text>
-
-      {/* RIGHT - Settings */}
+      
+      <View style={styles.center}>
+        <Text style={styles.label}>{sessionLabel}</Text>
+        <Text style={styles.value}>{formatTime(remainingMs)}</Text>
+      </View>
+      
       <TouchableOpacity onPress={onPressSettings}>
-              <Icon source={icons.settings} size={27} color="#FFFFFF" />
+        <Icon source={icons.settings} size={27} color="#FFFFFF" />
       </TouchableOpacity>
     </View>
   );
@@ -41,15 +77,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     backgroundColor: "#0B0F1A",
-    zIndex: 100, // Чтобы выпадашка была поверх
+    zIndex: 100,
   },
-  centerText: {
-    color: "white",
+  center: {
+    alignItems: "center",
+  },
+  label: {
+    color: "#6B7C8D",
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  value: {
+    color: "#FFFFFF",
+    fontSize: 14,
     fontWeight: "700",
-    fontSize: 16,
-  },
-  sideText: {
-    color: "#AAB4C3",
-    fontSize: 18,
   },
 });

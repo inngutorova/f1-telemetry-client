@@ -484,13 +484,15 @@
 			baseConfigurationReference = 8BCDD545F69621FF426C5D52 /* Pods-F1TelemetryNew.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = T3PDLG43R2;
+				DEVELOPMENT_TEAM = Y6TRUUWZV6;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = F1TelemetryNew/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Simply Lovely - Autosport Telemetry";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -516,12 +518,14 @@
 			baseConfigurationReference = 121EEC0C6CE8167E72653C18 /* Pods-F1TelemetryNew.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = T3PDLG43R2;
+				DEVELOPMENT_TEAM = Y6TRUUWZV6;
 				INFOPLIST_FILE = F1TelemetryNew/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Simply Lovely - Autosport Telemetry";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -570,7 +574,7 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Development";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;

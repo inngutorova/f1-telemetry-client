@@ -3,9 +3,6 @@ import { useState } from "react";
 import { TelemetryTable } from "./components/TelemetryTable";
 import { TelemetryHeader } from "./components/TelemetryHeader";
 import { TelemetryBottomPanels } from "./components/BottomPanels";
-import { mockDrivers } from "../mocks/telemetryMock";
-import { mockRaceControlMessages, mockTeamRadio } from "../mocks/messageMock";
-import { useFakeStream } from "../features/telemetry/useFakeStream";
 import { useRealStream } from "../features/telemetry/useRealStream";
 import { useSnapshotStore } from "../entities/snapshot/model/snapshotStore";
 import { useMessagesStore } from "../entities/messages/model/messagesStore";
@@ -24,18 +21,16 @@ export default function TelemetryScreen({ navigation, route }: TelemetryScreenPr
     const raceControlMessages = useMessagesStore((s) => s.raceControlMessages);
     const teamRadioMessages = useMessagesStore((s) => s.teamRadioMessages);
     const snapshot = useSnapshotStore((s) => s.currentSnapshot);
+    
     if (!snapshot) return null;
+    
     const leader = snapshot.drivers.find(d => d.position === 1);
-
-    // Текущий круг - количество кругов лидера с проверкой на null/undefined
     const currentLap = leader?.timing.number_of_laps ?? 0;
     
-
-    const delay = 0;
-
-    const handleDelayPress = () => {
-        console.log("open delay settings");
-    };
+    // Определяем тип сессии и общее количество кругов (только для гонок)
+    const sessionType = snapshot.session?.session_type;
+    const isRace = sessionType === 'race' || sessionType === 'sprint';
+    const totalLaps = isRace ? 53 : 0; // Для гонки/спринта показываем круги, для квалы/практики - нет
 
     const handleSettingsPress = () => {
         console.log("open columns settings");
@@ -56,7 +51,7 @@ export default function TelemetryScreen({ navigation, route }: TelemetryScreenPr
             
             <TelemetryHeader
                 currentLap={currentLap}
-                totalLaps={53}
+                totalLaps={totalLaps}
                 onPressSettings={handleSettingsPress}
             />
             <TelemetryTable drivers={snapshot.drivers} />

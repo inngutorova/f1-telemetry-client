@@ -45,14 +45,14 @@ class WebSocketService {
         if (__DEV__) {
             if (Platform.OS === 'ios') {
                 // Узнать IP: ifconfig | grep "inet " | grep -v 127.0.0.1
-                return 'ws://172.28.27.110:3000';
+                return 'ws://192.168.0.188:3000';
             }
             if (Platform.OS === 'android') {
                 return 'ws://10.0.2.2:3000';
             }
             return 'ws://localhost:3000';
         }
-        return 'wss://your-production-server:3000';
+        return 'ws://111.88.246.224:3000';
     }
 
     connect(delayMs: number = 0) {
@@ -76,12 +76,6 @@ class WebSocketService {
         this.ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-
-                // Проверяем pong ответ
-                if (data.type === 'pong') {
-                    console.log('[WebSocket] ❤️ Pong received');
-                    return;
-                }
 
                 // Определяем формат сообщения
                 let snapshot: RaceSnapshot | null = null;
@@ -186,7 +180,7 @@ class WebSocketService {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             const message = JSON.stringify({
                 type: 'subscribe',
-                delay_ms: delayMs / 1000,
+                delay_ms: delayMs,
             });
             this.ws.send(message);
             console.log(`[WebSocket] 📡 Subscribed with delay: ${delayMs}ms`);
@@ -204,7 +198,7 @@ class WebSocketService {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
             const message = JSON.stringify({
                 type: 'set_delay',
-                delay: delayMs / 1000,
+                delay: delayMs,
             });
             this.ws.send(message);
             console.log(`[WebSocket] 📡 Delay updated: ${delayMs}ms (set_delay sent)`);

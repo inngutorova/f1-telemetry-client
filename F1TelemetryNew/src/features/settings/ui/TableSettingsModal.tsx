@@ -12,6 +12,14 @@ import {
 } from 'react-native';
 import { tableColumns, TableColumn, ColumnKey } from '../../../shared/config/tableConfig';
 import { useSettingsStore } from '../../settings/model/settingsStore';
+import { useSnapshotStore } from '../../../entities/snapshot/model/snapshotStore';
+
+const COLUMNS_BY_SESSION: Record<string, string[]> = {
+  race: ['position', 'driver', 'gap', 'interval', 'lastLap', 'bestLap', 'tyre', 'sectors', "positionChange"],
+  sprint: ['position', 'driver', 'gap', 'interval', 'lastLap', 'bestLap', 'tyre', 'sectors', "positionChange"],
+  qualifying: ['position', 'driver', 'bestLap', 'sectors', 'tyre'],
+  practice: ['position', 'driver', 'bestLap', 'lastLap', 'sectors', 'tyre'],
+};
 
 type Props = {
     visible: boolean;
@@ -20,19 +28,28 @@ type Props = {
 
 export const TableSettingsModal = ({ visible, onClose }: Props) => {
     const { userSettings, setUserSettings, saveSettings } = useSettingsStore();
+    const snapshot = useSnapshotStore((s) => s.currentSnapshot);
     const [columns, setColumns] = useState<TableColumn[]>([]);
     const [hasChanges, setHasChanges] = useState(false);
+    
+    const sessionType = snapshot?.session?.session_type || 'race';
+    const allowedColumnKeys = COLUMNS_BY_SESSION[sessionType] || COLUMNS_BY_SESSION.race;
 
     useEffect(() => {
         if (visible) {
-            // Загружаем колонки в сохраненном порядке
+            // Получаем только колонки, разрешенные для текущего типа сессии
+            const allowedColumns = tableColumns.filter(col => 
+                allowedColumnKeys.includes(col.key)
+            );
+            
             let orderedColumns: TableColumn[];
             
             if (userSettings.columnsOrder && userSettings.columnsOrder.length > 0) {
-                // Сортируем колонки согласно сохраненному порядку
+                // Сортируем колонки согласно сохраненному порядку, но только разрешенные
                 orderedColumns = userSettings.columnsOrder
+                    .filter(key => allowedColumnKeys.includes(key))
                     .map(key => {
-                        const originalCol = tableColumns.find(col => col.key === key);
+                        const originalCol = allowedColumns.find(col => col.key === key);
                         if (originalCol) {
                             return {
                                 ...originalCol,
@@ -43,15 +60,15 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
                     })
                     .filter((col): col is TableColumn => col !== null);
                 
-                // Добавляем новые колонки, которых нет в сохраненном порядке
-                const existingKeys = new Set(userSettings.columnsOrder);
-                const newColumns = tableColumns.filter(col => !existingKeys.has(col.key));
+                // Добавляем новые разрешенные колонки, которых нет в сохраненном порядке
+                const existingKeys = new Set(orderedColumns.map(c => c.key));
+                const newColumns = allowedColumns.filter(col => !existingKeys.has(col.key));
                 if (newColumns.length > 0) {
                     orderedColumns = [...orderedColumns, ...newColumns];
                 }
             } else {
-                // Если нет сохраненного порядка, используем стандартный порядок
-                orderedColumns = tableColumns.map(col => ({
+                // Если нет сохраненного порядка, используем стандартный порядок разрешенных колонок
+                orderedColumns = allowedColumns.map(col => ({
                     ...col,
                     visible: userSettings.columnsVisible[col.key] ?? col.visible,
                 }));
@@ -60,7 +77,7 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
             setColumns(orderedColumns);
             setHasChanges(false);
         }
-    }, [visible, userSettings.columnsVisible, userSettings.columnsOrder]);
+    }, [visible, userSettings.columnsVisible, userSettings.columnsOrder, sessionType, allowedColumnKeys]);
 
     const toggleColumn = (key: ColumnKey) => {
         setColumns(prev =>
@@ -81,12 +98,21 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
     };
 
     const handleSave = () => {
-        // Сохраняем порядок и видимость колонок
+        // Сохраняем порядок и видимость колонок (только для разрешенных)
         const columnsVisible: Record<string, boolean> = {};
         const columnsOrder = columns.map(col => col.key);
         
+        // Сохраняем текущие настройки для разрешенных колонок
         columns.forEach(col => {
             columnsVisible[col.key] = col.visible;
+        });
+        
+        // Для колонок, которые не входят в разрешенный набор, сохраняем их видимость как false,
+        // чтобы при переключении типа сессии они не появились
+        tableColumns.forEach(col => {
+            if (!allowedColumnKeys.includes(col.key)) {
+                columnsVisible[col.key] = false;
+            }
         });
         
         setUserSettings({ columnsVisible, columnsOrder });
@@ -152,6 +178,17 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
         </View>
     );
 
+    // Определяем заголовок модалки в зависимости от типа сессии
+    const getModalTitle = () => {
+        switch (sessionType) {
+            case 'race': return 'Race Columns';
+            case 'sprint': return 'Sprint Columns';
+            case 'qualifying': return 'Qualifying Columns';
+            case 'practice': return 'Practice Columns';
+            default: return 'Customize Columns';
+        }
+    };
+
     return (
         <Modal
             visible={visible}
@@ -162,7 +199,7 @@ export const TableSettingsModal = ({ visible, onClose }: Props) => {
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContent}>
                     <View style={styles.modalHeader}>
-                        <Text style={styles.modalTitle}>Customize Columns</Text>
+                        <Text style={styles.modalTitle}>{getModalTitle()}</Text>
                         <Text style={styles.modalSubtitle}>
                             Use ↑↓ arrows to reorder • Toggle to show/hide
                         </Text>
@@ -292,7 +329,7 @@ const styles = StyleSheet.create({
         borderColor: '#3B4C5D',
     },
     saveButton: {
-        backgroundColor: '#0b2d71', // Синий цвет вместо зеленого
+        backgroundColor: '#0b2d71',
     },
     cancelButtonText: {
         color: '#AAB4C3',

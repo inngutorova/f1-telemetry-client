@@ -11,7 +11,8 @@ import { TyreCell } from "./cells/TyreCell";
 import { SectorsCell } from "./cells/SectorsCell";
 import { DriverState } from '../../entities/driver/model/types';
 import { tableColumns } from "../../shared/config/tableConfig";
-import { useSettingsStore } from "../../features/settings/model/settingsStore";
+import { useVisibleColumns } from "../../features/settings/useVisibleColumns";
+
 
 
 type Props = {
@@ -20,30 +21,7 @@ type Props = {
 
 export const DriverRow = ({ driver }: Props) => {
 
-    const { userSettings } = useSettingsStore();
-
-    // Получаем колонки в правильном порядке из настроек
-    const getOrderedColumns = () => {
-        // Если есть сохраненный порядок, используем его
-        if (userSettings.columnsOrder && userSettings.columnsOrder.length > 0) {
-            return userSettings.columnsOrder
-                .map(key => {
-                    const col = tableColumns.find(c => c.key === key);
-                    if (col && (userSettings.columnsVisible[col.key] ?? col.visible)) {
-                        return col;
-                    }
-                    return null;
-                })
-                .filter((col): col is typeof tableColumns[0] => col !== null);
-        }
-        
-        // Иначе используем стандартный порядок с фильтрацией по видимости
-        return tableColumns.filter(col => 
-            userSettings.columnsVisible[col.key] ?? col.visible
-        );
-    };
-
-    const visibleColumns = getOrderedColumns();
+    const visibleColumns = useVisibleColumns();
     const renderCell = (col: typeof tableColumns[0]) => {
         switch (col.key) {
             case "position":
